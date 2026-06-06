@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#2563eb">
+<title>DAM Employee</title>
+<link rel="manifest" href="data:application/json,{&quot;name&quot;:&quot;DAM Employee&quot;,&quot;short_name&quot;:&quot;DAM&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;background_color&quot;:&quot;#ffffff&quot;,&quot;theme_color&quot;:&quot;#2563eb&quot;}">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --bg:#f1f5f9;--card:#fff;--card2:#f8fafc;--txt:#0f172a;--txt2:#64748b;--txtm:#94a3b8;
+  --bdr:#e2e8f0;--acc:#2563eb;--accl:#eff6ff;--grn:#16a34a;--grnl:#dcfce7;
+  --red:#dc2626;--redl:#fee2e2;--amb:#d97706;--ambl:#fef3c7;--pur:#7c3aed;--purl:#ede9fe;
+  --sh:0 1px 3px rgba(0,0,0,0.08);--shm:0 4px 12px rgba(0,0,0,0.1);
+  --r:12px;--rs:8px;--tr:all 0.2s ease;
+}
+[data-theme=dark]{--bg:#0f172a;--card:#1e293b;--card2:#162032;--txt:#f1f5f9;--txt2:#94a3b8;--txtm:#64748b;--bdr:#2d3f55;--accl:#1e3a5f;--grnl:#14532d;--redl:#7f1d1d;--ambl:#78350f;--purl:#3b0764;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;max-width:430px;margin:0 auto;position:relative;overflow-x:hidden;}
+
+/* AUTH */
+#auth{position:fixed;inset:0;background:linear-gradient(160deg,#1e3a5f 0%,#0f172a 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;padding:24px;}
+.auth-logo{text-align:center;margin-bottom:32px;}
+.auth-ico{width:72px;height:72px;border-radius:20px;background:rgba(255,255,255,0.1);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:30px;color:#fff;}
+.auth-title{font-size:24px;font-weight:800;color:#fff;margin-bottom:4px;}
+.auth-sub{font-size:13px;color:rgba(255,255,255,0.6);}
+.auth-card{background:rgba(255,255,255,0.07);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:28px;width:100%;max-width:340px;}
+.auth-label{font-size:13px;font-weight:600;color:rgba(255,255,255,0.8);margin-bottom:10px;text-align:center;}
+.pin-display{display:flex;gap:12px;justify-content:center;margin-bottom:22px;}
+.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,0.4);transition:var(--tr);}
+.pin-dot.on{background:#fff;border-color:#fff;}
+.pin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.pin-btn{height:64px;border-radius:14px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);font-size:22px;font-weight:700;color:#fff;cursor:pointer;transition:var(--tr);display:flex;align-items:center;justify-content:center;flex-direction:column;}
+.pin-btn:hover,.pin-btn:active{background:rgba(255,255,255,0.2);transform:scale(0.96);}
+.pin-btn sub{font-size:8px;font-weight:500;opacity:0.6;letter-spacing:0.1em;}
+.auth-err{color:#fca5a5;font-size:13px;text-align:center;margin-top:11px;min-height:18px;}
+.emp-sel-card{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:14px;padding:14px;margin-bottom:11px;cursor:pointer;transition:var(--tr);display:flex;align-items:center;gap:12px;}
+.emp-sel-card:hover{background:rgba(255,255,255,0.14);transform:translateX(3px);}
+.emp-ava{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;flex-shrink:0;}
+.emp-sel-name{font-size:15px;font-weight:700;color:#fff;}
+.emp-sel-role{font-size:12px;color:rgba(255,255,255,0.6);}
+
+/* APP SHELL */
+#app{display:none;padding-bottom:80px;}
+.top-bar{background:var(--acc);color:#fff;padding:14px 18px 12px;display:flex;align-items:center;justify-content:space-between;}
+.top-emp{font-size:16px;font-weight:700;}
+.top-sub{font-size:11px;opacity:0.75;margin-top:1px;}
+.top-ava{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;cursor:pointer;}
+
+/* BOTTOM NAV */
+.bot-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:var(--card);border-top:1px solid var(--bdr);display:flex;z-index:100;box-shadow:0 -4px 20px rgba(0,0,0,0.08);}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px;cursor:pointer;color:var(--txtm);font-size:10px;font-weight:600;transition:var(--tr);border:none;background:none;position:relative;}
+.nav-btn.on{color:var(--acc);}
+.nav-btn i{font-size:20px;margin-bottom:2px;}
+.nav-btn .nb{position:absolute;top:4px;right:calc(50% - 16px);background:var(--red);color:#fff;font-size:8px;font-weight:800;padding:1px 4px;border-radius:10px;min-width:14px;text-align:center;}
+
+/* PAGES */
+.pg{display:none;padding:14px;}
+.pg.on{display:block;}
+.sec-title{font-size:11px;font-weight:700;color:var(--txtm);text-transform:uppercase;letter-spacing:0.08em;margin:14px 0 8px;}
+
+/* CARDS */
+.card{background:var(--card);border-radius:var(--r);border:1px solid var(--bdr);box-shadow:var(--sh);overflow:hidden;margin-bottom:12px;}
+.card-h{padding:13px 15px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;}
+.card-t{font-size:14px;font-weight:700;}
+.card-b{padding:13px 15px;}
+.stat-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.stat-box{background:var(--card);border:1px solid var(--bdr);border-radius:var(--r);padding:14px;text-align:center;box-shadow:var(--sh);}
+.stat-lbl{font-size:11px;color:var(--txtm);font-weight:600;margin-bottom:4px;}
+.stat-val{font-size:22px;font-weight:800;}
+.stat-sub{font-size:10px;color:var(--txtm);margin-top:2px;}
+
+/* ATTENDANCE STRIP */
+.att-strip{display:flex;gap:4px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px;}
+.att-strip::-webkit-scrollbar{height:2px;}
+.att-day{display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;}
+.att-day-num{font-size:9px;color:var(--txtm);}
+.att-day-box{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;border:1px solid transparent;}
+.att-day-box.P{background:#dcfce7;color:#15803d;}.att-day-box.A{background:#fee2e2;color:#b91c1c;}
+.att-day-box.L{background:#dbeafe;color:#1d4ed8;}.att-day-box.S{background:#fce7f3;color:#9d174d;}
+.att-day-box.H{background:#ede9fe;color:#6d28d9;}.att-day-box.HD{background:#fff7ed;color:#c2410c;}
+.att-day-box.LA{background:#fef9c3;color:#854d0e;}.att-day-box.empty{background:var(--bg);border:1px dashed var(--bdr);color:var(--txtm);}
+.att-day-box.sun{background:#e0e7ff;color:#4338ca;border-color:#c7d2fe;}
+
+/* EXPENSE ROW */
+.exp-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:0.5px solid var(--bdr);}
+.exp-row:last-child{border-bottom:none;}
+.exp-merchant{font-size:13px;font-weight:600;}
+.exp-cat{font-size:11px;color:var(--txtm);}
+.exp-amt{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--grn);}
+.exp-date{font-size:10px;color:var(--txtm);}
+.flag-btn{background:none;border:1px solid var(--bdr);border-radius:5px;padding:3px 7px;font-size:10px;font-weight:600;color:var(--txtm);cursor:pointer;}
+.flag-btn.flagged{background:var(--redl);color:var(--red);border-color:var(--red);}
+
+/* FORM */
+.form-group{margin-bottom:13px;}
+.form-group label{display:block;font-size:12px;font-weight:600;color:var(--txt2);margin-bottom:5px;}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:11px 13px;border:1.5px solid var(--bdr);border-radius:var(--rs);font-size:14px;color:var(--txt);background:var(--card);font-family:inherit;outline:none;transition:var(--tr);}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(37,99,235,0.1);}
+.form-group textarea{resize:vertical;min-height:80px;}
+.btn{width:100%;padding:13px;border-radius:var(--rs);border:none;font-size:15px;font-weight:700;cursor:pointer;transition:var(--tr);font-family:inherit;display:flex;align-items:center;justify-content:center;gap:7px;}
+.btn-p{background:var(--acc);color:#fff;}.btn-p:active{background:#1d4ed8;transform:scale(0.98);}
+.btn-s{background:var(--grn);color:#fff;}.btn-s:active{background:#15803d;transform:scale(0.98);}
+.btn-o{background:var(--card);color:var(--txt2);border:1.5px solid var(--bdr);}
+.btn-d{background:var(--red);color:#fff;}
+
+/* RECEIPT */
+.receipt-zone{border:2px dashed var(--bdr);border-radius:var(--r);padding:28px;text-align:center;cursor:pointer;transition:var(--tr);background:var(--card2);margin-bottom:13px;}
+.receipt-zone:hover{border-color:var(--acc);background:var(--accl);}
+.receipt-zone i{font-size:30px;color:var(--txtm);margin-bottom:8px;display:block;}
+.receipt-zone p{font-size:13px;color:var(--txtm);}
+.receipt-preview{width:100%;max-height:200px;object-fit:cover;border-radius:var(--rs);margin-bottom:11px;display:none;}
+
+/* MESSAGES */
+.msg-area{display:flex;flex-direction:column;gap:8px;padding:13px;background:var(--card2);border-radius:var(--r);margin-bottom:11px;min-height:200px;max-height:340px;overflow-y:auto;}
+.bubble{padding:10px 13px;border-radius:14px;max-width:82%;font-size:13px;word-break:break-word;}
+.bubble.me{background:var(--acc);color:#fff;align-self:flex-end;border-radius:14px 14px 4px 14px;}
+.bubble.them{background:var(--card);border:1px solid var(--bdr);align-self:flex-start;border-radius:14px 14px 14px 4px;}
+.bubble-time{font-size:10px;color:var(--txtm);margin-top:2px;text-align:right;}
+
+/* SALARY CARD */
+.sal-card{background:linear-gradient(135deg,#1e3a5f,#2563eb);border-radius:var(--r);padding:20px;color:#fff;margin-bottom:12px;}
+.sal-lbl{font-size:12px;opacity:0.75;margin-bottom:4px;}
+.sal-val{font-size:32px;font-weight:800;font-family:'JetBrains Mono',monospace;margin-bottom:4px;}
+.sal-sub{font-size:12px;opacity:0.7;}
+.sal-row{display:flex;justify-content:space-between;margin-top:14px;padding-top:13px;border-top:1px solid rgba(255,255,255,0.2);}
+.sal-item{text-align:center;}
+.sal-item-lbl{font-size:10px;opacity:0.7;}
+.sal-item-val{font-size:15px;font-weight:700;}
+
+/* HISTORY */
+.hist-month{font-size:13px;font-weight:700;color:var(--txt2);margin:12px 0 6px;padding:6px 0;border-bottom:1px solid var(--bdr);}
+.hist-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:0.5px solid var(--bdr);font-size:13px;}
+.hist-row:last-child{border-bottom:none;}
+
+/* TOASTS */
+.toasts{position:fixed;top:70px;left:50%;transform:translateX(-50%);width:calc(100% - 28px);max-width:400px;z-index:9999;display:flex;flex-direction:column;gap:6px;}
+.toast{background:var(--card);border:1px solid var(--bdr);border-radius:var(--r);padding:11px 14px;box-shadow:var(--shm);display:flex;align-items:center;gap:9px;font-size:13px;font-weight:500;animation:slideD 0.3s ease;}
+.toast.s{border-left:4px solid var(--grn);}.toast.e{border-left:4px solid var(--red);}.toast.i{border-left:4px solid var(--acc);}
+.toast.s i{color:var(--grn);}.toast.e i{color:var(--red);}.toast.i i{color:var(--acc);}
+@keyframes slideD{from{opacity:0;transform:translateY(-12px);}to{opacity:1;transform:translateY(0);}}
+.tag-chip{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;cursor:pointer;margin:2px;}
+.month-tabs{display:flex;gap:5px;overflow-x:auto;margin-bottom:12px;padding-bottom:2px;}
+.month-tabs::-webkit-scrollbar{height:2px;}
+.month-tab{padding:5px 12px;border-radius:20px;border:1.5px solid var(--bdr);font-size:12px;font-weight:600;color:var(--txtm);cursor:pointer;white-space:nowrap;transition:var(--tr);}
+.month-tab.on{background:var(--acc);color:#fff;border-color:var(--acc);}
+.progress-wrap{background:var(--bdr);border-radius:3px;height:6px;margin-top:4px;}
+.progress-fill{height:100%;border-radius:3px;transition:width 0.5s;}
+</style>
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div id="auth">
+  <div class="auth-logo">
+    <div class="auth-ico"><i class="fa-solid fa-mobile-screen"></i></div>
+    <div class="auth-title">DAM Employee</div>
+    <div class="auth-sub">Your attendance & pay portal</div>
+  </div>
+  <!-- Step 1: Choose employee -->
+  <div id="authStep1" style="width:100%;max-width:340px;">
+    <div style="font-size:13px;font-weight:600;color:rgba(255,255,255,0.8);margin-bottom:11px;text-align:center;">Who are you?</div>
+    <div id="empList" style="max-height:380px;overflow-y:auto;"></div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.4);text-align:center;margin-top:11px;">Scroll to find your name</div>
+  </div>
+  <!-- Step 2: Enter PIN -->
+  <div id="authStep2" style="display:none;">
+    <div class="auth-card">
+      <div class="auth-label" id="authName">Enter your PIN</div>
+      <div class="pin-display"><div class="pin-dot" id="pd0"></div><div class="pin-dot" id="pd1"></div><div class="pin-dot" id="pd2"></div><div class="pin-dot" id="pd3"></div><div class="pin-dot" id="pd4"></div><div class="pin-dot" id="pd5"></div></div>
+      <div class="pin-grid">
+        <button class="pin-btn" onclick="pinKey('1')">1</button>
+        <button class="pin-btn" onclick="pinKey('2')">2<sub>ABC</sub></button>
+        <button class="pin-btn" onclick="pinKey('3')">3<sub>DEF</sub></button>
+        <button class="pin-btn" onclick="pinKey('4')">4<sub>GHI</sub></button>
+        <button class="pin-btn" onclick="pinKey('5')">5<sub>JKL</sub></button>
+        <button class="pin-btn" onclick="pinKey('6')">6<sub>MNO</sub></button>
+        <button class="pin-btn" onclick="pinKey('7')">7<sub>PQRS</sub></button>
+        <button class="pin-btn" onclick="pinKey('8')">8<sub>TUV</sub></button>
+        <button class="pin-btn" onclick="pinKey('9')">9<sub>WXYZ</sub></button>
+        <button class="pin-btn" onclick="goBack()" style="font-size:13px;">← Back</button>
+        <button class="pin-btn" onclick="pinKey('0')">0</button>
+        <button class="pin-btn" onclick="pinDel()" style="font-size:18px;">⌫</button>
+      </div>
+      <div class="auth-err" id="authErr"></div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <div><div class="top-emp" id="topName">Loading...</div><div class="top-sub" id="topRole"></div></div>
+    <div class="top-ava" id="topAva" onclick="doLogout()">?</div>
+  </div>
+
+  <!-- HOME PAGE -->
+  <div class="pg on" id="pg-home">
+    <div class="sal-card">
+      <div class="sal-lbl">Estimated This Month</div>
+      <div class="sal-val" id="hmSalary">£—</div>
+      <div class="sal-sub" id="hmSalSub">Loading...</div>
+      <div class="sal-row">
+        <div class="sal-item"><div class="sal-item-lbl">Base Pay</div><div class="sal-item-val" id="hmBase">—</div></div>
+        <div class="sal-item"><div class="sal-item-lbl">OT Pay</div><div class="sal-item-val" id="hmOT">—</div></div>
+        <div class="sal-item"><div class="sal-item-lbl">Bonus</div><div class="sal-item-val" id="hmBonus">—</div></div>
+        <div class="sal-item"><div class="sal-item-lbl">Days</div><div class="sal-item-val" id="hmDays">—</div></div>
+      </div>
+    </div>
+    <div class="sec-title">This Month Attendance</div>
+    <div class="att-strip" id="hmStrip"></div>
+    <div class="stat-row" id="hmStats"></div>
+    <div class="sec-title">Recent Expenses</div>
+    <div class="card"><div class="card-b" id="hmExpenses"></div></div>
+  </div>
+
+  <!-- ATTENDANCE PAGE -->
+  <div class="pg" id="pg-att">
+    <div class="sec-title">Attendance History</div>
+    <div class="month-tabs" id="attMonthTabs"></div>
+    <div class="att-strip" id="attStrip" style="flex-wrap:wrap;overflow:visible;gap:6px;padding-bottom:0;margin-bottom:14px;"></div>
+    <div class="card">
+      <div class="card-h"><div class="card-t" id="attMonthTitle">Records</div></div>
+      <div class="card-b" id="attRecords"></div>
+    </div>
+  </div>
+
+  <!-- EXPENSES PAGE -->
+  <div class="pg" id="pg-exp">
+    <div class="sec-title">Add Expense</div>
+    <div class="card"><div class="card-b">
+      <div class="form-group"><label>Date *</label><input type="date" id="expDate"></div>
+      <div class="form-group"><label>Description / Merchant *</label><input type="text" id="expMerchant" placeholder="e.g. Screwfix, Costa Coffee"></div>
+      <div class="form-group"><label>Category</label><select id="expCat"><option value="">— Select Category —</option></select></div>
+      <div class="form-group"><label>Amount (£) *</label><input type="number" id="expAmt" placeholder="0.00" step="0.01" min="0"></div>
+      <div class="form-group"><label>Notes</label><textarea id="expNotes" placeholder="Any additional details..."></textarea></div>
+      <div class="receipt-zone" onclick="document.getElementById('receiptInput').click()">
+        <i class="fa-solid fa-camera"></i>
+        <p><strong>Tap to attach receipt</strong><br>Photo or file</p>
+      </div>
+      <img class="receipt-preview" id="receiptPreview">
+      <input type="file" id="receiptInput" accept="image/*" capture="environment" style="display:none;" onchange="handleReceipt(this)">
+      <button class="btn btn-p" onclick="submitExpense()"><i class="fa-solid fa-paper-plane"></i>Submit Expense</button>
+    </div></div>
+    <div class="sec-title">My Expenses</div>
+    <div class="month-tabs" id="expMonthTabs"></div>
+    <div class="card"><div class="card-b" id="myExpenses"></div></div>
+  </div>
+
+  <!-- PAY PAGE -->
+  <div class="pg" id="pg-pay">
+    <div class="sec-title">Salary Summary</div>
+    <div class="month-tabs" id="payMonthTabs"></div>
+    <div id="payCards"></div>
+    <div class="sec-title">Lifetime Summary</div>
+    <div class="card"><div class="card-b" id="lifetimeStats"></div></div>
+  </div>
+
+  <!-- MESSAGES PAGE -->
+  <div class="pg" id="pg-msg">
+    <div class="sec-title">Messages with Office</div>
+    <div class="msg-area" id="msgArea"><div style="text-align:center;color:var(--txtm);font-size:13px;padding:20px;">No messages yet</div></div>
+    <div class="form-group"><input type="text" id="msgInput" placeholder="Type a message..." style="padding:11px 13px;" onkeydown="if(event.key==='Enter')sendMsg()"></div>
+    <button class="btn btn-p" onclick="sendMsg()"><i class="fa-solid fa-paper-plane"></i>Send Message</button>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bot-nav">
+    <button class="nav-btn on" id="nb-home" onclick="showPg('home')"><i class="fa-solid fa-house"></i>Home</button>
+    <button class="nav-btn" id="nb-att" onclick="showPg('att')"><i class="fa-solid fa-calendar-check"></i>Attendance</button>
+    <button class="nav-btn" id="nb-exp" onclick="showPg('exp')"><i class="fa-solid fa-receipt"></i>Expenses</button>
+    <button class="nav-btn" id="nb-pay" onclick="showPg('pay')"><i class="fa-solid fa-sterling-sign"></i>Pay</button>
+    <button class="nav-btn" id="nb-msg" onclick="showPg('msg')"><i class="fa-solid fa-comments"></i>Messages<span class="nb" id="msgNb" style="display:none;"></span></button>
+  </div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<script>
+const SUPA_URL='https://kwrhxjiwnklphjkzeays.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt3cmh4aml3bmtscGhqa3plYXlzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3MDY2MDMsImV4cCI6MjA5NjI4MjYwM30.gA9tNRbPUTu2gswZs_ecFS6wMMd1i-KqlusWJfsJtw8';
+const sb=supabase.createClient(SUPA_URL,SUPA_KEY);
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const AVCOLS=['#2563eb','#16a34a','#dc2626','#7c3aed','#d97706','#0891b2','#be185d','#0f766e','#9333ea','#c2410c'];
+const STATUSES={P:'Present',A:'Absent',L:'Annual Leave',S:'Sick Leave',H:'Bank Holiday',HD:'Half Day',LA:'Late',UL:'Unpaid Leave'};
+
+let currentEmp=null,allEmployees=[],myAtt=[],myExp=[],myMsgs=[],cfg={};
+let pinEntry='',selectedEmpId='';
+let receiptFile=null;
+let attViewMonth=new Date().getMonth(),attViewYear=new Date().getFullYear();
+let expViewMonth=new Date().getMonth(),expViewYear=new Date().getFullYear();
+let payViewMonth=new Date().getMonth(),payViewYear=new Date().getFullYear();
+
+function inits(n){return(n||'').split(' ').map(w=>w[0]||'').join('').toUpperCase().slice(0,2)||'?';}
+function avcol(id){const i=allEmployees.findIndex(e=>e.id===id);return AVCOLS[Math.abs(i)%AVCOLS.length];}
+function dateKey(d){const dt=d instanceof Date?d:new Date(d+'T00:00:00');return`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;}
+function fmtDate(d){if(!d)return'—';const dt=d instanceof Date?d:new Date(d+'T00:00:00');return dt.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});}
+function isSun(d){const dt=d instanceof Date?d:new Date(d+'T00:00:00');return dt.getDay()===0;}
+function isSat(d){const dt=d instanceof Date?d:new Date(d+'T00:00:00');return dt.getDay()===6;}
+function isP(s){return s==='P'||s==='HD'||s==='LA';}
+function dim(y,m){return new Date(y,m+1,0).getDate();}
+function cur(){return cfg.currency||'£';}
+function fmt(v){return cur()+parseFloat(v||0).toFixed(2);}
+function toast(msg,type='i'){const ic={s:'fa-circle-check',e:'fa-circle-xmark',i:'fa-circle-info'};const t=document.createElement('div');t.className=`toast ${type}`;t.innerHTML=`<i class="fa-solid ${ic[type]}"></i>${msg}`;document.getElementById('toasts').appendChild(t);setTimeout(()=>t.remove(),3200);}
+
+function calcPay(emp,rec){
+  const pt=emp.pay_type||'hourly';
+  const dt=new Date(rec.date+'T00:00:00');
+  const satM=isSat(dt)?(parseFloat(emp.sat_mult)||1):1;
+  const sunM=isSun(dt)?(parseFloat(emp.sun_mult)||1):1;
+  const wkM=sunM>1?sunM:satM>1?satM:1;
+  const ot=parseFloat(rec.overtime)||0;
+  let otRate=0;
+  if(emp.ot_type==='flat'){otRate=parseFloat(emp.ot_flat)||0;}
+  else{const otM=parseFloat(emp.ot_mult)||1.5;let bh=0;if(pt==='hourly')bh=parseFloat(emp.hourly_rate)||0;else if(pt==='daily'){const ch=parseFloat(emp.contracted_hours)||8;bh=ch>0?(parseFloat(emp.daily_rate)||0)/ch:0;}else if(pt==='fixed'){const ch=parseFloat(emp.contracted_hours)||8;const de=(parseFloat(emp.salary)||0)/30;bh=ch>0?de/ch:0;}otRate=bh*otM;}
+  const otPay=ot*otRate;
+  let basePay=0;
+  if(pt==='hourly'){const r=parseFloat(emp.hourly_rate)||0;const h=parseFloat(rec.hours)||0;const reg=Math.max(0,h-ot);basePay=reg*r*wkM;}
+  else if(pt==='daily'){const r=parseFloat(emp.daily_rate)||0;basePay=(rec.status==='HD'?r*0.5:r)*wkM;}
+  return{base:basePay,ot:otPay,total:basePay+otPay};
+}
+
+// ── AUTH ──────────────────────────────────────────
+async function initAuth(){
+  const r=await sb.from('employees').select('id,name,role,status,pin,pay_type,hourly_rate,salary,daily_rate,contracted_hours,ot_type,ot_mult,ot_flat,sat_mult,sun_mult').order('name');
+  if(r.error){document.getElementById('empList').innerHTML='<div style="color:#f87171;text-align:center;">Could not load employees. Check connection.</div>';return;}
+  allEmployees=r.data.filter(e=>e.status==='Active');
+  const cfgR=await sb.from('settings').select('*').eq('id',1).single();
+  if(cfgR.data)cfg=cfgR.data;
+  const list=document.getElementById('empList');
+  list.innerHTML=allEmployees.map((e,i)=>`<div class="emp-sel-card" onclick="selectEmp('${e.id}')">
+    <div class="emp-ava" style="background:${AVCOLS[i%AVCOLS.length]}">${inits(e.name)}</div>
+    <div><div class="emp-sel-name">${e.name}</div><div class="emp-sel-role">${e.role||'Employee'}</div></div>
+    <i class="fa-solid fa-chevron-right" style="margin-left:auto;color:rgba(255,255,255,0.4);"></i>
+  </div>`).join('');
+}
+
+function selectEmp(id){
+  selectedEmpId=id;pinEntry='';
+  const emp=allEmployees.find(e=>e.id===id);
+  document.getElementById('authName').textContent=`Hello ${emp?.name?.split(' ')[0]||''}, enter your PIN`;
+  document.getElementById('authStep1').style.display='none';
+  document.getElementById('authStep2').style.display='block';
+  updatePinDots();
+}
+function goBack(){document.getElementById('authStep2').style.display='none';document.getElementById('authStep1').style.display='block';pinEntry='';selectedEmpId='';updatePinDots();}
+function pinKey(k){if(pinEntry.length>=6)return;pinEntry+=k;updatePinDots();if(pinEntry.length>=4){const emp=allEmployees.find(e=>e.id===selectedEmpId);if(emp?.pin&&pinEntry.length===emp.pin.length)checkPin();}}
+function pinDel(){pinEntry=pinEntry.slice(0,-1);updatePinDots();document.getElementById('authErr').textContent='';}
+function updatePinDots(){for(let i=0;i<6;i++){const d=document.getElementById('pd'+i);if(d){d.classList.toggle('on',i<pinEntry.length);d.style.display=i<4?'block':(pinEntry.length>4||allEmployees.find(e=>e.id===selectedEmpId)?.pin?.length>4?'block':'none');}}}
+async function checkPin(){
+  const emp=allEmployees.find(e=>e.id===selectedEmpId);
+  if(!emp?.pin){document.getElementById('authErr').textContent='No PIN set. Contact admin.';pinEntry='';updatePinDots();return;}
+  if(pinEntry===emp.pin){await loadAndEnter(emp);}
+  else{document.getElementById('authErr').textContent='Incorrect PIN. Try again.';pinEntry='';updatePinDots();setTimeout(()=>{document.getElementById('authErr').textContent='';},2500);}
+}
+async function loadAndEnter(emp){
+  currentEmp=emp;
+  document.getElementById('auth').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('topName').textContent=emp.name;
+  document.getElementById('topRole').textContent=emp.role||'Employee';
+  document.getElementById('topAva').textContent=inits(emp.name);
+  document.getElementById('expDate').value=dateKey(new Date());
+  await loadMyData();
+  renderHome();populateCats();buildMonthTabs();
+}
+function doLogout(){currentEmp=null;myAtt=[];myExp=[];myMsgs=[];document.getElementById('app').style.display='none';document.getElementById('auth').style.display='flex';document.getElementById('authStep2').style.display='none';document.getElementById('authStep1').style.display='block';pinEntry='';selectedEmpId='';updatePinDots();}
+
+async function loadMyData(){
+  const [attR,expR,msgR]=await Promise.all([
+    sb.from('attendance').select('*').eq('employee_id',currentEmp.id).order('date',{ascending:false}),
+    sb.from('expenses').select('*').eq('employee_id',currentEmp.id).order('date',{ascending:false}),
+    sb.from('messages').select('*').eq('employee_id',currentEmp.id).order('created_at')
+  ]);
+  myAtt=attR.data||[];myExp=expR.data||[];myMsgs=msgR.data||[];
+  updateMsgBadge();
+}
+function updateMsgBadge(){const u=myMsgs.filter(m=>!m.read&&m.sender==='office').length;const nb=document.getElementById('msgNb');if(nb){nb.textContent=u;nb.style.display=u>0?'':'none';}}
+
+// ── NAVIGATION ────────────────────────────────────
+function showPg(id){
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('pg-'+id).classList.add('on');
+  document.getElementById('nb-'+id).classList.add('on');
+  if(id==='home')renderHome();
+  else if(id==='att')renderAtt();
+  else if(id==='exp')renderMyExpenses();
+  else if(id==='pay')renderPay();
+  else if(id==='msg')renderMsgs();
+}
+
+// ── HOME ──────────────────────────────────────────
+function renderHome(){
+  if(!currentEmp)return;
+  const now=new Date(),m=now.getMonth(),y=now.getFullYear(),C=cur();
+  const mRecs=myAtt.filter(r=>{const d=new Date(r.date+'T00:00:00');return d.getMonth()===m&&d.getFullYear()===y;});
+  const days=dim(y,m);
+  const wDays=Array.from({length:days},(_,i)=>{const dt=new Date(y,m,i+1);return dt.getDay()!==0;}).filter(Boolean).length;
+  const present=mRecs.filter(r=>isP(r.status)&&new Date(r.date+'T00:00:00').getDay()!==0).length;
+  const pct=wDays>0?Math.round(present/wDays*100):0;
+  // Salary calc
+  const activeR=mRecs.filter(r=>isP(r.status));
+  let base=0,ot=0;
+  if(currentEmp.pay_type==='fixed')base=parseFloat(currentEmp.salary)||0;
+  else activeR.forEach(r=>{const p=calcPay(currentEmp,r);base+=p.base;ot+=p.ot;});
+  const bonus=mRecs.reduce((s,r)=>s+(parseFloat(r.bonus)||0),0);
+  const total=base+ot+bonus;
+  document.getElementById('hmSalary').textContent=fmt(total);
+  document.getElementById('hmSalSub').textContent=`${MONTHS[m]} ${y} estimate`;
+  document.getElementById('hmBase').textContent=fmt(base);
+  document.getElementById('hmOT').textContent=fmt(ot);
+  document.getElementById('hmBonus').textContent=fmt(bonus);
+  document.getElementById('hmDays').textContent=`${present}/${wDays}`;
+  // Attendance strip
+  const strip=document.getElementById('hmStrip');strip.innerHTML='';
+  for(let d=1;d<=days;d++){
+    const dt=new Date(y,m,d),key=dateKey(dt),rec=mRecs.find(r=>r.date===key);
+    const sun=isSun(dt),sat=isSat(dt);
+    const el=document.createElement('div');el.className='att-day';
+    el.innerHTML=`<div class="att-day-num">${d}</div><div class="att-day-box${sun?' sun':rec?(' '+rec.status):(sat?' empty':' empty')}">${rec?rec.status:(sun?'☀':'·')}</div>`;
+    strip.appendChild(el);
+  }
+  if(today){const t=strip.querySelector(`.att-day:nth-child(${now.getDate()})`);if(t)t.scrollIntoView({inline:'center',behavior:'smooth'});}
+  // Stats
+  document.getElementById('hmStats').innerHTML=`<div class="stat-box"><div class="stat-lbl">Attendance</div><div class="stat-val" style="color:${pct>=80?'var(--grn)':pct>=60?'var(--amb)':'var(--red)'};">${pct}%</div><div class="stat-sub">${present} of ${wDays} days</div></div><div class="stat-box"><div class="stat-lbl">Hours This Month</div><div class="stat-val">${mRecs.reduce((s,r)=>s+(parseFloat(r.hours)||0),0).toFixed(0)}</div><div class="stat-sub">OT: ${mRecs.reduce((s,r)=>s+(parseFloat(r.overtime)||0),0).toFixed(1)}h</div></div>`;
+  // Recent expenses
+  const recentExp=myExp.slice(0,5);
+  document.getElementById('hmExpenses').innerHTML=recentExp.length?recentExp.map(e=>`<div class="exp-row"><div><div class="exp-merchant">${e.merchant||'—'}</div><div class="exp-cat">${e.category||'—'} · ${fmtDate(e.date)}</div></div><div class="exp-amt">${fmt(e.amount)}</div></div>`).join(''):'<div style="text-align:center;color:var(--txtm);padding:14px;font-size:13px;">No expenses yet</div>';
+}
+
+// ── ATTENDANCE ────────────────────────────────────
+function buildMonthTabs(){
+  const now=new Date();
+  ['attMonthTabs','expMonthTabs','payMonthTabs'].forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;
+    el.innerHTML='';
+    for(let i=5;i>=0;i--){
+      const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+      const m=d.getMonth(),y=d.getFullYear();
+      const tab=document.createElement('div');tab.className='month-tab'+(i===0?' on':'');
+      tab.textContent=MONTHS[m].slice(0,3)+' '+y;
+      tab.onclick=()=>{
+        const tabs=el.querySelectorAll('.month-tab');tabs.forEach(t=>t.classList.remove('on'));tab.classList.add('on');
+        if(id==='attMonthTabs'){attViewMonth=m;attViewYear=y;renderAtt();}
+        else if(id==='expMonthTabs'){expViewMonth=m;expViewYear=y;renderMyExpenses();}
+        else{payViewMonth=m;payViewYear=y;renderPay();}
+      };
+      el.appendChild(tab);
+    }
+  });
+}
+function renderAtt(){
+  const m=attViewMonth,y=attViewYear;
+  document.getElementById('attMonthTitle').textContent=`${MONTHS[m]} ${y} Records`;
+  const days=dim(y,m);
+  const mRecs=myAtt.filter(r=>{const d=new Date(r.date+'T00:00:00');return d.getMonth()===m&&d.getFullYear()===y;});
+  // Strip
+  const strip=document.getElementById('attStrip');strip.innerHTML='';
+  for(let d=1;d<=days;d++){
+    const dt=new Date(y,m,d),key=dateKey(dt),rec=mRecs.find(r=>r.date===key);
+    const sun=isSun(dt),sat=isSat(dt);
+    const el=document.createElement('div');el.className='att-day';
+    el.innerHTML=`<div class="att-day-num">${d}</div><div class="att-day-box${sun?' sun':rec?(' '+rec.status):(sat?' empty':' empty')}">${rec?rec.status:(sun?'☀':'·')}</div>`;
+    strip.appendChild(el);
+  }
+  // Records table
+  let rows='';
+  for(let d=1;d<=days;d++){
+    const dt=new Date(y,m,d),key=dateKey(dt),rec=mRecs.find(r=>r.date===key);
+    if(!rec&&!isSun(dt))continue;
+    const sun=isSun(dt),sat=isSat(dt);
+    const bg=sun?'background:rgba(165,180,252,0.12)':sat?'background:rgba(196,181,253,0.1)':'';
+    const bonus=rec?.bonus?`<span style="color:var(--grn);font-size:11px;font-weight:600;">+${fmt(rec.bonus)}</span>`:'';
+    rows+=`<div class="hist-row" style="${bg}"><div><strong>${d} ${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][dt.getDay()]}</strong><br><span style="font-size:11px;color:var(--txtm);">${fmtDate(dt)}</span></div><div style="text-align:right;">${rec?`<span class="tag-chip" style="background:#dcfce7;color:#15803d;">${rec.status}</span>${bonus}`:'<span style="color:var(--txtm);font-size:12px;">Not marked</span>'}<br>${rec?.hours?`<span style="font-size:11px;color:var(--txtm);">${rec.hours}h${rec.overtime?` · OT:${rec.overtime}h`:''}${rec.sign_in?` · ${rec.sign_in}–${rec.sign_out||'?'}`:''}</span>`:''}</div></div>`;
+  }
+  document.getElementById('attRecords').innerHTML=rows||'<div style="text-align:center;color:var(--txtm);padding:14px;">No records for this month</div>';
+}
+
+// ── EXPENSES ──────────────────────────────────────
+function populateCats(){
+  const sel=document.getElementById('expCat');
+  (cfg.categories||['Travel','Meals','Equipment','Software','Utilities']).forEach(c=>{sel.appendChild(new Option(c,c));});
+}
+function handleReceipt(input){
+  const file=input.files[0];if(!file)return;
+  receiptFile=file;
+  const reader=new FileReader();
+  reader.onload=e=>{const img=document.getElementById('receiptPreview');img.src=e.target.result;img.style.display='block';};
+  reader.readAsDataURL(file);
+  toast('Receipt attached','s');
+}
+async function submitExpense(){
+  const merchant=document.getElementById('expMerchant').value.trim();
+  const amt=parseFloat(document.getElementById('expAmt').value);
+  const date=document.getElementById('expDate').value;
+  if(!merchant||!amt||!date){toast('Please fill in date, description, and amount','e');return;}
+  let receiptUrl=null;
+  if(receiptFile){
+    // Upload to Supabase Storage
+    const ext=receiptFile.name.split('.').pop()||'jpg';
+    const path=`receipts/${currentEmp.id}/${Date.now()}.${ext}`;
+    const {data:upData,error:upErr}=await sb.storage.from('receipts').upload(path,receiptFile,{upsert:true});
+    if(upErr){toast('Could not upload receipt: '+upErr.message,'e');}
+    else{const {data:urlData}=sb.storage.from('receipts').getPublicUrl(path);receiptUrl=urlData?.publicUrl||null;}
+  }
+  const payload={employee_id:currentEmp.id,date,merchant,category:document.getElementById('expCat').value||null,amount:amt,notes:document.getElementById('expNotes').value||null,receipt_url:receiptUrl,status:'draft',tags:[],flagged:false};
+  const r=await sb.from('expenses').insert(payload).select().single();
+  if(r.error){toast(r.error.message,'e');return;}
+  myExp.unshift(r.data);
+  // Reset form
+  document.getElementById('expMerchant').value='';document.getElementById('expAmt').value='';document.getElementById('expNotes').value='';document.getElementById('expCat').value='';document.getElementById('receiptPreview').style.display='none';receiptFile=null;document.getElementById('receiptInput').value='';
+  toast('Expense submitted!','s');renderMyExpenses();
+}
+function renderMyExpenses(){
+  const m=expViewMonth,y=expViewYear;
+  const mExp=myExp.filter(e=>{const d=new Date(e.date+'T00:00:00');return d.getMonth()===m&&d.getFullYear()===y;});
+  const C=cur();
+  document.getElementById('myExpenses').innerHTML=mExp.length?mExp.map(e=>`<div class="exp-row">
+    <div style="flex:1;"><div class="exp-merchant">${e.merchant||'—'}${e.flagged?'<span style="color:var(--red);font-size:10px;margin-left:5px;">⚑ Flagged</span>':''}</div><div class="exp-cat">${e.category||'—'} · ${fmtDate(e.date)}</div>${e.receipt_url?`<a href="${e.receipt_url}" target="_blank" style="font-size:11px;color:var(--acc);">View receipt</a>`:''}</div>
+    <div style="text-align:right;"><div class="exp-amt">${C}${parseFloat(e.amount||0).toFixed(2)}</div><button class="flag-btn ${e.flagged?'flagged':''}" onclick="toggleFlag('${e.id}')">${e.flagged?'⚑ Flagged':'⚑ Flag'}</button></div>
+  </div>`).join(''):'<div style="text-align:center;color:var(--txtm);padding:14px;font-size:13px;">No expenses for this month</div>';
+}
+async function toggleFlag(id){
+  const exp=myExp.find(e=>e.id===id);if(!exp)return;
+  let flagNote=null;
+  if(!exp.flagged){flagNote=prompt('Reason for flagging (optional):');}
+  const r=await sb.from('expenses').update({flagged:!exp.flagged,flag_note:flagNote}).eq('id',id);
+  if(r.error){toast(r.error.message,'e');return;}
+  exp.flagged=!exp.flagged;exp.flag_note=flagNote;
+  renderMyExpenses();toast(exp.flagged?'Flagged for office review':'Flag removed','i');
+}
+
+// ── PAY ───────────────────────────────────────────
+function renderPay(){
+  const C=cur();const emp=currentEmp;
+  const now=new Date();
+  // Current month card
+  const m=payViewMonth,y=payViewYear;
+  const mRecs=myAtt.filter(r=>{const d=new Date(r.date+'T00:00:00');return d.getMonth()===m&&d.getFullYear()===y;});
+  const mExp=myExp.filter(e=>{const d=new Date(e.date+'T00:00:00');return d.getMonth()===m&&d.getFullYear()===y;});
+  const activeR=mRecs.filter(r=>isP(r.status));
+  let base=0,ot=0;
+  if(emp.pay_type==='fixed')base=parseFloat(emp.salary)||0;
+  else activeR.forEach(r=>{const p=calcPay(emp,r);base+=p.base;ot+=p.ot;});
+  const bonus=mRecs.reduce((s,r)=>s+(parseFloat(r.bonus)||0),0);
+  const expTotal=mExp.reduce((s,e)=>s+(parseFloat(e.amount)||0),0);
+  const total=base+ot+bonus;
+  const days=dim(y,m);
+  const wDays=Array.from({length:days},(_,i)=>new Date(y,m,i+1).getDay()!==0).filter(Boolean).length;
+  const present=activeR.filter(r=>new Date(r.date+'T00:00:00').getDay()!==0).length;
+  const pct=wDays>0?Math.round(present/wDays*100):0;
+  const hours=mRecs.reduce((s,r)=>s+(parseFloat(r.hours)||0),0);
+  const otHrs=mRecs.reduce((s,r)=>s+(parseFloat(r.overtime)||0),0);
+  document.getElementById('payCards').innerHTML=`
+    <div class="sal-card">
+      <div class="sal-lbl">${MONTHS[m]} ${y}</div>
+      <div class="sal-val">${fmt(total)}</div>
+      <div class="sal-sub">Estimate only · Tax &amp; NI not deducted</div>
+      <div class="sal-row">
+        <div class="sal-item"><div class="sal-item-lbl">Base</div><div class="sal-item-val">${fmt(base)}</div></div>
+        <div class="sal-item"><div class="sal-item-lbl">OT</div><div class="sal-item-val">${fmt(ot)}</div></div>
+        <div class="sal-item"><div class="sal-item-lbl">Bonus</div><div class="sal-item-val">${fmt(bonus)}</div></div>
+        <div class="sal-item"><div class="sal-item-lbl">Expenses</div><div class="sal-item-val">${fmt(expTotal)}</div></div>
+      </div>
+    </div>
+    <div class="card"><div class="card-b">
+      <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--bdr);"><span>Days Present</span><strong>${present}/${wDays}</strong></div>
+      <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--bdr);"><span>Attendance Rate</span><strong style="color:${pct>=80?'var(--grn)':pct>=60?'var(--amb)':'var(--red)'};">${pct}%</strong></div>
+      <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--bdr);"><span>Total Hours</span><strong>${hours.toFixed(1)}h</strong></div>
+      <div style="display:flex;justify-content:space-between;padding:7px 0;"><span>Overtime Hours</span><strong style="color:var(--amb);">${otHrs.toFixed(1)}h</strong></div>
+    </div></div>`;
+  // Lifetime
+  const lifetime={total:0,days:0,hours:0,ot:0,bonus:0};
+  myAtt.forEach(r=>{if(isP(r.status)){lifetime.days++;lifetime.hours+=parseFloat(r.hours)||0;const p=emp.pay_type==='fixed'?(parseFloat(emp.salary)||0)/30:calcPay(emp,r).base+(emp.pay_type!=='fixed'?calcPay(emp,r).ot:0);lifetime.total+=p;}lifetime.ot+=parseFloat(r.overtime)||0;lifetime.bonus+=parseFloat(r.bonus)||0;});
+  document.getElementById('lifetimeStats').innerHTML=`
+    <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bdr);"><span style="color:var(--txt2);">Total Days Worked</span><strong>${lifetime.days}</strong></div>
+    <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bdr);"><span style="color:var(--txt2);">Total Hours</span><strong>${lifetime.hours.toFixed(0)}h</strong></div>
+    <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bdr);"><span style="color:var(--txt2);">Total OT Hours</span><strong style="color:var(--amb);">${lifetime.ot.toFixed(0)}h</strong></div>
+    <div style="display:flex;justify-content:space-between;padding:8px 0;"><span style="color:var(--txt2);">Total Bonuses</span><strong style="color:var(--grn);">${fmt(lifetime.bonus)}</strong></div>`;
+}
+
+// ── MESSAGES ──────────────────────────────────────
+async function renderMsgs(){
+  // Mark office messages as read
+  const unread=myMsgs.filter(m=>!m.read&&m.sender==='office');
+  if(unread.length>0){await sb.from('messages').update({read:true}).eq('employee_id',currentEmp.id).eq('sender','office');unread.forEach(m=>m.read=true);}
+  updateMsgBadge();
+  const area=document.getElementById('msgArea');
+  if(!myMsgs.length){area.innerHTML='<div style="text-align:center;color:var(--txtm);font-size:13px;padding:20px;">No messages yet</div>';return;}
+  area.innerHTML=myMsgs.map(m=>{const isMe=m.sender!=='office';return`<div style="display:flex;flex-direction:column;align-items:${isMe?'flex-end':'flex-start'};"><div class="bubble ${isMe?'me':'them'}">${m.body}</div><div class="bubble-time">${new Date(m.created_at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</div></div>`;}).join('');
+  area.scrollTop=area.scrollHeight;
+}
+async function sendMsg(){
+  const body=document.getElementById('msgInput').value.trim();if(!body||!currentEmp)return;
+  const r=await sb.from('messages').insert({employee_id:currentEmp.id,sender:currentEmp.id,body,read:false}).select().single();
+  if(r.error){toast(r.error.message,'e');return;}
+  myMsgs.push(r.data);document.getElementById('msgInput').value='';renderMsgs();
+}
+
+// ── INIT ──────────────────────────────────────────
+const today=true;
+initAuth();
+</script>
+</body>
+</html>
