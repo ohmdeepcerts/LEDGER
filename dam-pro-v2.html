@@ -693,7 +693,7 @@ tr.rsun td{background:var(--sut)!important;}
 <div class="mo" id="empModal">
   <div class="modal">
     <div class="mh"><div class="mt" id="empMTitle">Add Employee</div><button class="mc" onclick="closeEmpModal()"><i class="fa-solid fa-xmark"></i></button></div>
-    <div class="mo-tabs"><div class="mo-tab active" onclick="switchEmpTab('details',this)"><i class="fa-solid fa-user" style="margin-right:5px;"></i>Details</div><div class="mo-tab" onclick="switchEmpTab('pay',this)"><i class="fa-solid fa-sterling-sign" style="margin-right:5px;"></i>Pay &amp; Contract</div><div class="mo-tab" onclick="switchEmpTab('hours',this)"><i class="fa-solid fa-clock" style="margin-right:5px;"></i>Hours &amp; PIN</div><div class="mo-tab" onclick="switchEmpTab('docs',this);loadEmpDocs()"><i class="fa-solid fa-folder-open" style="margin-right:5px;"></i>Documents</div></div>
+    <div class="mo-tabs"><div class="mo-tab active" onclick="switchEmpTab('details',this)"><i class="fa-solid fa-user" style="margin-right:5px;"></i>Details</div><div class="mo-tab" onclick="switchEmpTab('pay',this)"><i class="fa-solid fa-sterling-sign" style="margin-right:5px;"></i>Pay &amp; Contract</div><div class="mo-tab" onclick="switchEmpTab('hours',this)"><i class="fa-solid fa-clock" style="margin-right:5px;"></i>Hours &amp; PIN</div><div class="mo-tab" onclick="switchEmpTab('docs',this)"><i class="fa-solid fa-folder-open" style="margin-right:5px;"></i>Documents</div><div class="mo-tab" onclick="switchEmpTab('salary',this)"><i class="fa-solid fa-clock-rotate-left" style="margin-right:5px;"></i>Pay History</div><div class="mo-tab" onclick="switchEmpTab('docs',this);loadEmpDocs()"><i class="fa-solid fa-folder-open" style="margin-right:5px;"></i>Documents</div></div>
     <input type="hidden" id="empId">
     <div class="mo-sec active" id="empTab-details">
       <div class="fg fg2">
@@ -755,61 +755,55 @@ tr.rsun td{background:var(--sut)!important;}
     </div>
     <!-- DOCUMENTS TAB -->
     <div class="mo-sec" id="empTab-docs">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:13px;">
-        <div style="font-size:13px;font-weight:700;">Employee Documents</div>
-        <button class="btn btn-p btn-sm" onclick="openAddDocForm()"><i class="fa-solid fa-plus"></i>Add Document</button>
-      </div>
-      <!-- Add document form (hidden by default) -->
-      <div id="addDocForm" style="display:none;background:var(--card2);border:1px solid var(--bdr);border-radius:var(--r);padding:14px;margin-bottom:13px;">
-        <div style="font-size:13px;font-weight:700;margin-bottom:11px;"><i class="fa-solid fa-file-circle-plus" style="color:var(--acc);margin-right:5px;"></i>Add New Document</div>
+      <!-- ADD DOC FORM (hidden by default) -->
+      <div id="addDocInline" style="display:none;background:var(--card2);border:1px solid var(--bdr);border-radius:var(--r);padding:14px;margin-bottom:13px;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:11px;display:flex;justify-content:space-between;align-items:center;">
+          <span><i class="fa-solid fa-file-circle-plus" style="color:var(--acc);margin-right:5px;"></i>Add Document</span>
+          <button class="mc" onclick="document.getElementById('addDocInline').style.display='none'"><i class="fa-solid fa-xmark"></i></button>
+        </div>
         <div class="fg fg2">
           <div class="fgl" style="grid-column:1/-1"><label>Document Name *</label><input type="text" id="docName" placeholder="e.g. Share Code, Driving Licence, Passport"></div>
-          <div class="fgl"><label>Document Type</label><select id="docType">
-            <option value="share_code">Share Code</option>
-            <option value="id">ID / Passport</option>
-            <option value="driving">Driving Licence</option>
-            <option value="rtw">Right to Work</option>
-            <option value="contract">Contract</option>
-            <option value="certificate">Certificate / Qualification</option>
-            <option value="insurance">Insurance</option>
-            <option value="other">Other</option>
+          <div class="fgl"><label>Type</label><select id="docType">
+            <option value="Share Code">Share Code</option>
+            <option value="Passport">Passport</option>
+            <option value="National ID">National ID</option>
+            <option value="DBS Check">DBS Check</option>
+            <option value="Driving Licence">Driving Licence</option>
+            <option value="Right to Work">Right to Work</option>
+            <option value="Contract">Contract</option>
+            <option value="Certification">Certification</option>
+            <option value="Insurance">Insurance</option>
+            <option value="Other">Other</option>
           </select></div>
-          <div class="fgl"><label>Expiry Date (if applicable)</label><input type="date" id="docExpiry"></div>
-          <div class="fgl"><label>Reminder (days before expiry)</label><select id="docReminder">
-            <option value="30">30 days before</option>
-            <option value="60">60 days before</option>
-            <option value="90">90 days before</option>
-            <option value="14">14 days before</option>
-            <option value="7">7 days before</option>
-            <option value="0">On expiry date</option>
+          <div class="fgl"><label>Expiry Date</label><input type="date" id="docExpiry"></div>
+          <div class="fgl"><label>Remind Before</label><select id="docReminder">
+            <option value="7">7 days</option>
+            <option value="14">14 days</option>
+            <option value="30" selected>30 days</option>
+            <option value="60">60 days</option>
+            <option value="90">90 days</option>
           </select></div>
           <div class="fgl" style="grid-column:1/-1"><label>Notes</label><input type="text" id="docNotes" placeholder="Reference number, issuing authority, etc."></div>
         </div>
-        <div style="border:2px dashed var(--bdr);border-radius:var(--r);padding:16px;text-align:center;cursor:pointer;background:var(--card);margin-bottom:11px;" onclick="document.getElementById('docFile').click()">
-          <i class="fa-solid fa-cloud-arrow-up" style="font-size:22px;color:var(--txtm);margin-bottom:5px;display:block;"></i>
-          <div style="font-size:13px;font-weight:600;color:var(--txt2);">Click to upload PDF or image</div>
+        <div style="border:2px dashed var(--bdr);border-radius:var(--r);padding:13px;text-align:center;cursor:pointer;background:var(--card);margin-bottom:11px;" onclick="document.getElementById('docFile').click()">
+          <i class="fa-solid fa-cloud-arrow-up" style="font-size:20px;color:var(--txtm);margin-bottom:4px;display:block;"></i>
+          <div style="font-size:12px;font-weight:600;color:var(--txt2);">Click to upload PDF or image (optional)</div>
           <div style="font-size:11px;color:var(--txtm);" id="docFileName">No file chosen</div>
         </div>
         <input type="file" id="docFile" accept=".pdf,image/*" style="display:none;" onchange="document.getElementById('docFileName').textContent=this.files[0]?.name||'No file chosen'">
-        <div style="display:flex;gap:7px;">
-          <button class="btn btn-o" onclick="document.getElementById('addDocForm').style.display='none'">Cancel</button>
-          <button class="btn btn-p" onclick="saveDoc()"><i class="fa-solid fa-floppy-disk"></i>Save Document</button>
+        <div style="display:flex;gap:7px;justify-content:flex-end;">
+          <button class="btn btn-o btn-sm" onclick="document.getElementById('addDocInline').style.display='none'">Cancel</button>
+          <button class="btn btn-p btn-sm" onclick="saveDoc()"><i class="fa-solid fa-floppy-disk"></i>Save Document</button>
         </div>
       </div>
-      <div id="docList"><div class="es"><i class="fa-solid fa-folder-open"></i><h3>No documents yet</h3><p>Add IDs, share codes, licences etc.</p></div></div>
-    </div>
-    <!-- SALARY HISTORY TAB -->
-    <div class="mo-sec" id="empTab-salary">
-      <div id="salaryHistList"><div style="text-align:center;color:var(--txtm);padding:20px;font-size:13px;">No salary history yet.</div></div>
-    </div>
-    <!-- DOCUMENTS TAB -->
-    <div class="mo-sec" id="empTab-docs">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px;">
+      <!-- DOCS LIST HEADER -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:11px;">
         <div style="font-size:13px;font-weight:700;">Employee Documents</div>
-        <button class="btn btn-p btn-sm" onclick="openAddDocModal()"><i class="fa-solid fa-plus"></i>Add Document</button>
+        <button class="btn btn-p btn-sm" onclick="openAddDocForm()"><i class="fa-solid fa-plus"></i>Add Document</button>
       </div>
+      <!-- DOCS LIST -->
       <div id="empDocsList">
-        <div style="text-align:center;color:var(--txtm);padding:20px;font-size:13px;"><i class="fa-solid fa-folder-open" style="font-size:28px;display:block;margin-bottom:8px;"></i>No documents yet.<br>Add ID cards, Share Codes, DBS checks etc.</div>
+        <div style="text-align:center;color:var(--txtm);padding:26px;font-size:13px;"><i class="fa-solid fa-folder-open" style="font-size:28px;display:block;margin-bottom:9px;"></i>No documents yet.<br>Click + Add Document to upload IDs, Share Codes etc.</div>
       </div>
     </div>
     <div class="mf"><button class="btn btn-d btn-sm" id="empDelBtn" style="display:none;" onclick="deleteEmployee()"><i class="fa-solid fa-trash"></i>Delete</button><div style="display:flex;gap:7px;"><button class="btn btn-o" onclick="closeEmpModal()">Cancel</button><button class="btn btn-p" onclick="saveEmployee()"><i class="fa-solid fa-floppy-disk"></i>Save Employee</button></div></div>
@@ -865,9 +859,19 @@ tr.rsun td{background:var(--sut)!important;}
         <i class="fa-solid fa-file-slash" style="font-size:22px;display:block;margin-bottom:7px;"></i>No file attached
       </div>
     </div>
+    <div style="padding:13px 18px;border-top:1px solid var(--bdr);background:var(--card2);">
+      <div style="font-size:12px;font-weight:600;color:var(--txt2);margin-bottom:8px;">Update Expiry Date</div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input type="date" id="dvmExpiryEdit" style="flex:1;padding:7px 10px;border:1px solid var(--bdr);border-radius:var(--rs);font-size:13px;color:var(--txt);background:var(--card);font-family:inherit;outline:none;">
+        <button class="btn btn-s btn-sm" onclick="updateDocExpiry()"><i class="fa-solid fa-floppy-disk"></i>Update</button>
+      </div>
+    </div>
     <div class="mf">
-      <button class="btn btn-d btn-sm" id="dvmDeleteBtn" onclick=""><i class="fa-solid fa-trash"></i>Delete</button>
-      <button class="btn btn-p" onclick="dvmGoToEmployee()"><i class="fa-solid fa-user"></i>Open Employee</button>
+      <button class="btn btn-d btn-sm" id="dvmDeleteBtn" onclick="deleteDocFromViewer(_dvmDocId,_dvmEmpId)"><i class="fa-solid fa-trash"></i>Delete</button>
+      <div style="display:flex;gap:7px;">
+        <button class="btn btn-o" onclick="dvmGoToEmployee()"><i class="fa-solid fa-user"></i>Employee Profile</button>
+        <button class="btn btn-p" onclick="document.getElementById('docViewModal').classList.remove('open')">Close</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1066,15 +1070,14 @@ function changePin(){
 async function loadAllData(){
   setSyncStatus('saving');
   try{
-    const [empR,cfgR,attR,expR,batR,msgR,docR,salR]=await Promise.all([
+    // Core tables - must succeed
+    const [empR,cfgR,attR,expR,batR,msgR]=await Promise.all([
       sb.from('employees').select('*').order('name'),
       sb.from('settings').select('*').eq('id',1).single(),
       sb.from('attendance').select('*').order('date',{ascending:false}),
       sb.from('expenses').select('*').order('date',{ascending:false}),
       sb.from('expense_batches').select('*').order('submitted_at',{ascending:false}),
-      sb.from('messages').select('*').order('created_at'),
-      sb.from('employee_documents').select('*').order('uploaded_at',{ascending:false}),
-      sb.from('salary_history').select('*').order('effective_from',{ascending:false})
+      sb.from('messages').select('*').order('created_at')
     ]);
     if(empR.error)throw empR.error;
     employees=empR.data||[];
@@ -1083,13 +1086,27 @@ async function loadAllData(){
     expenses=expR.data||[];
     batches=batR.data||[];
     messages=msgR.data||[];
+
+    // Optional tables - fail gracefully if not created yet
+    const [docR,salR,payR]=await Promise.all([
+      sb.from('employee_documents').select('*').order('uploaded_at',{ascending:false}),
+      sb.from('salary_history').select('*').order('effective_from',{ascending:false}),
+      sb.from('payment_status').select('*')
+    ]);
     employeeDocuments=docR.error?[]:docR.data||[];
     salaryHistory=salR.error?[]:salR.data||[];
+    // Pre-load payment statuses into cache
+    if(!payR.error)(payR.data||[]).forEach(row=>{
+      paymentStatuses[`${row.employee_id}_${row.month}_${row.year}`]={
+        bank_paid:row.bank_paid,cash_paid:row.cash_paid,
+        paid_at:row.paid_at,bank_custom:row.bank_custom,cash_custom:row.cash_custom
+      };
+    });
     setSyncStatus('saved');
     initSelectors();
     navigate('dashboard');
     updateBadges();
-    loadAllDocs(); // load document reminders
+    // employeeDocuments already loaded above - no separate call needed
   }catch(e){
     setSyncStatus('err');
     console.error('Load error:',e);
@@ -1544,17 +1561,16 @@ function renderLedger(){
   // Table
   const tbody=document.getElementById('ledBody'),empty=document.getElementById('ledEmpty');
   if(data.length===0){tbody.innerHTML='';empty.style.display='block';renderLedRight(data,C);}
-  else{empty.style.display='none';let running=0;tbody.innerHTML=data.map((row,i)=>{running+=(parseFloat(row.amount)||0);return buildLedRow(row,i,running,C,isEx);}).join('');}
+  else{empty.style.display='none';let running=0;const totalRows=data.length;tbody.innerHTML=data.map((row,i)=>{running+=(parseFloat(row.amount)||0);return buildLedRow(row,i,running,C,isEx,totalRows);}).join('');}
   renderLedRight(data,C);
 }
-function buildLedRow(row,i,running,C,isEx){
-  const cats=(cfg.categories||[]);
+function buildLedRow(row,i,running,C,isEx,totalRows){
   const tagsHtml=buildTagsCell(row.tags||[],row.id);
   const catStyle=getCatStyle(row.category);
   return`<tr>
     <td style="text-align:center;width:24px;"><span style="font-size:11px;color:var(--txtm);">${i+1}</span></td>
     <td><input type="date" class="shi" value="${row.date||''}" ${isEx?'disabled':''} onchange="updateExp('${row.id}','date',this.value)"></td>
-    <td><input type="text" class="shi" placeholder="Description..." value="${(row.merchant||'').replace(/"/g,'&quot;')}" ${isEx?'disabled':''} oninput="updateExp('${row.id}','merchant',this.value);checkAutoNextRow('${row.id}',${i},${data.length})"></td>
+    <td><input type="text" class="shi" placeholder="Description..." value="${(row.merchant||'').replace(/"/g,'&quot;')}" ${isEx?'disabled':''} oninput="updateExp('${row.id}','merchant',this.value);checkAutoNextRow('${row.id}',${i},${totalRows||1})"></td>
     <td><input type="text" class="shi cat-inp" list="ledCatList" placeholder="Category" value="${(row.category||'').replace(/"/g,'&quot;')}" style="${catStyle}" ${isEx?'disabled':''} oninput="updateExp('${row.id}','category',this.value)"></td>
     <td><div class="tc" id="tc-${row.id}">${tagsHtml}</div></td>
     <td><input type="number" class="shi amt-i" placeholder="0.00" step="0.01" min="0" value="${row.amount===0?'':row.amount}" ${isEx?'disabled':''} oninput="updateExp('${row.id}','amount',parseFloat(this.value)||0)" onblur="renderLedger()"></td>
@@ -1600,22 +1616,77 @@ async function updateExp(id,field,val){
   deb('exp-save-'+id,async()=>{await sb.from('expenses').update({[field]:val}).eq('id',id);},900);
 }
 function checkAutoNextRow(rowId,rowIdx,totalRows){
-  // If this is the last row and user started typing, auto-add next row
   if(rowIdx===totalRows-1){
-    const el=document.getElementById(`led-m-${rowId}`)||document.querySelector(`input[data-eid="${rowId}"]`);
     deb('auto-next-'+rowId,async()=>{
-      const val=document.querySelector(`#ledBody tr:last-child td:nth-child(3) input`)?.value||'';
-      if(val.trim().length>0)await addLedRow();
-    },1200);
+      // Only add if last row merchant has content AND no row was added since
+      const lastRows=document.querySelectorAll('#ledBody tr');
+      const currentTotal=lastRows.length;
+      if(currentTotal>rowIdx)return; // already added
+      const val=document.querySelector('#ledBody tr:last-child td:nth-child(3) input')?.value||'';
+      if(val.trim().length>0)await addLedRowSilent();
+    },1400);
   }
 }
 async function addLedRow(){
-  if(!ledgerStaff)return;
+  if(!ledgerStaff){toast('Select a staff member first','e');return;}
   const today=dateKey(new Date());
   const dateToUse=today.startsWith(`${ledgerYear}-${ledgerMonth}`)?today:`${ledgerYear}-${ledgerMonth}-01`;
-  const r=await sb.from('expenses').insert({employee_id:ledgerStaff,date:dateToUse,merchant:'',category:'',amount:0,tags:[],status:'draft'}).select().single();
-  if(r.error){toast(r.error.message,'e');return;}
-  expenses.push(r.data);renderLedger();toast('Row added','i');
+  setSyncStatus('saving');
+  const r=await sb.from('expenses').insert({
+    employee_id:ledgerStaff,date:dateToUse,merchant:'',category:'',amount:0,tags:[],status:'draft'
+  }).select().single();
+  if(r.error){setSyncStatus('err');toast('Error: '+r.error.message,'e');return;}
+  expenses.push(r.data);
+  setSyncStatus('saved');
+  renderLedger(); // full render for Add Row button click
+  setTimeout(()=>{
+    const rows=document.querySelectorAll('#ledBody tr');
+    if(rows.length>0){const last=rows[rows.length-1];const inp=last.querySelector('td:nth-child(3) input');if(inp){inp.focus();inp.scrollIntoView({behavior:'smooth',block:'nearest'});}}
+  },80);
+}
+
+async function addLedRowSilent(){
+  // Add next row WITHOUT disrupting current focus/typing
+  if(!ledgerStaff)return;
+  const focused=document.activeElement; // remember focus
+  const today=dateKey(new Date());
+  const dateToUse=today.startsWith(`${ledgerYear}-${ledgerMonth}`)?today:`${ledgerYear}-${ledgerMonth}-01`;
+  const r=await sb.from('expenses').insert({
+    employee_id:ledgerStaff,date:dateToUse,merchant:'',category:'',amount:0,tags:[],status:'draft'
+  }).select().single();
+  if(r.error){console.warn('Silent add row error:',r.error);return;}
+  expenses.push(r.data);
+  setSyncStatus('saved');
+  // Append new row to tbody WITHOUT rebuilding the table
+  const tbody=document.getElementById('ledBody');
+  if(!tbody)return;
+  const C=cur();
+  const isEx=employees.find(e=>e.id===ledgerStaff)?.status==='ex';
+  const runningTotal=expenses.filter(e=>{
+    const d=new Date(e.date+'T00:00:00');
+    return e.employee_id===ledgerStaff&&d.getFullYear()===ledgerYear&&String(d.getMonth()+1).padStart(2,'0')===ledgerMonth;
+  }).reduce((s,e)=>s+(parseFloat(e.amount)||0),0);
+  const newRowIdx=tbody.querySelectorAll('tr').length;
+  const newRowHtml=buildLedRow(r.data,newRowIdx,runningTotal,C,isEx,newRowIdx+1);
+  const temp=document.createElement('tbody');
+  temp.innerHTML=newRowHtml;
+  tbody.appendChild(temp.firstElementChild);
+  // Restore focus to where user was typing
+  if(focused&&focused!==document.body)focused.focus();
+  // Update footer totals silently
+  updateLedgerFooterOnly();
+}
+
+function updateLedgerFooterOnly(){
+  if(!ledgerStaff)return;
+  const C=cur();
+  const data=expenses.filter(e=>{
+    const d=new Date(e.date+'T00:00:00');
+    return e.employee_id===ledgerStaff&&d.getFullYear()===ledgerYear&&String(d.getMonth()+1).padStart(2,'0')===ledgerMonth;
+  });
+  const total=data.reduce((s,e)=>s+(parseFloat(e.amount)||0),0);
+  const el=document.getElementById('ledTotal');if(el)el.textContent=C+total.toFixed(2);
+  const ct=document.getElementById('ledRowCt');if(ct)ct.textContent=data.length+' row'+(data.length!==1?'s':'');
 }
 async function deleteLedRow(id){
   if(!confirm('Delete this expense row?'))return;
@@ -2347,7 +2418,6 @@ async function removeCat(idx){const cats=[...(cfg.categories||[])];cats.splice(i
 // ═══════════════════════════════════════════════════
 // DOCUMENTS
 // ═══════════════════════════════════════════════════
-let empDocs=[]; // cached for current employee modal
 const DOC_ICONS={share_code:'🔑',id:'🪪',driving:'🚗',rtw:'📋',contract:'📄',certificate:'🏆',insurance:'🛡️',other:'📁'};
 const DOC_LABELS={share_code:'Share Code',id:'ID / Passport',driving:'Driving Licence',rtw:'Right to Work',contract:'Contract',certificate:'Certificate',insurance:'Insurance',other:'Document'};
 
@@ -2406,7 +2476,10 @@ function renderDocList(){
   }).join('');
 }
 
-function openAddDocForm(){document.getElementById('addDocForm').style.display='block';document.getElementById('docName').focus();}
+function openAddDocForm(){
+  const f=document.getElementById('addDocInline');
+  if(f){f.style.display='block';document.getElementById('docName').value='';document.getElementById('docExpiry').value='';document.getElementById('docNotes').value='';document.getElementById('docFileName').textContent='No file chosen';document.getElementById('docFile').value='';document.getElementById('docName').focus();}
+}
 
 async function saveDoc(){
   const empId=document.getElementById('empId').value;
@@ -2436,7 +2509,7 @@ async function saveDoc(){
   ['docName','docExpiry','docNotes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('docFile').value='';
   document.getElementById('docFileName').textContent='No file chosen';
-  document.getElementById('addDocForm').style.display='none';
+  document.getElementById('addDocInline').style.display='none';
   renderDocList();
   toast(`${name} saved!`,'s');
 }
@@ -2445,7 +2518,7 @@ async function deleteDoc(id){
   if(!confirm('Delete this document?'))return;
   const r=await sb.from('employee_documents').delete().eq('id',id);
   if(r.error){toast(r.error.message,'e');return;}
-  empDocs=employeeDocuments.filter(d=>d.id!==id);renderDocList();renderDocReminders();toast('Document deleted','i');
+  employeeDocuments=employeeDocuments.filter(d=>d.id!==id);renderDocList();renderDocReminders();toast('Document deleted','i');
 }
 
 // ── DOCUMENT REMINDERS on dashboard ──────────────
@@ -2690,6 +2763,7 @@ function openDocViewer(docId){
   document.getElementById('dvmIcon').style.cssText=`width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;background:${def.color}18;color:${def.color};`;
   document.getElementById('dvmIcon').innerHTML=`<i class="fa-solid ${def.icon}"></i>`;
   document.getElementById('dvmExpiry').textContent=doc.expiry_date?fmtDate(doc.expiry_date):'No expiry';
+  const dvmEE=document.getElementById('dvmExpiryEdit');if(dvmEE)dvmEE.value=doc.expiry_date||'';
   document.getElementById('dvmStatus').innerHTML=doc.expiry_date?`<span style="color:${st.color};">${st.label}</span>`:'<span style="color:var(--txtm);">No expiry set</span>';
   document.getElementById('dvmReminder').textContent=doc.reminder_days?`${doc.reminder_days} days before`:'30 days before';
   document.getElementById('dvmNotes').textContent=doc.notes||'—';
@@ -2727,6 +2801,23 @@ async function deleteDocFromViewer(docId,empId){
 function dvmGoToEmployee(){
   document.getElementById('docViewModal').classList.remove('open');
   if(_dvmEmpId)openDocForEmp(_dvmEmpId);
+}
+
+async function updateDocExpiry(){
+  if(!_dvmDocId)return;
+  const newExpiry=document.getElementById('dvmExpiryEdit').value||null;
+  const r=await sb.from('employee_documents').update({expiry_date:newExpiry}).eq('id',_dvmDocId);
+  if(r.error){toast(r.error.message,'e');return;}
+  const doc=employeeDocuments.find(d=>d.id===_dvmDocId);
+  if(doc){doc.expiry_date=newExpiry;}
+  // Refresh status in viewer
+  const st=getDocStatus({expiry_date:newExpiry,reminder_days:30});
+  document.getElementById('dvmExpiry').textContent=newExpiry?fmtDate(newExpiry):'No expiry';
+  document.getElementById('dvmStatus').innerHTML=newExpiry?`<span style="color:${st.color};">${st.label}</span>`:'<span style="color:var(--txtm);">No expiry set</span>';
+  // Refresh the doc list in background
+  const empId=document.getElementById('empId')?.value;
+  if(empId)renderDocList();
+  toast('Expiry date updated!','s');
 }
 
 // ═══════════════════════════════════════════════════
