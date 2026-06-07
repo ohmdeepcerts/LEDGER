@@ -259,6 +259,11 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .notif-panel:not(.open){transform:translateY(-10px);opacity:0;pointer-events:none;display:block!important;}
 .notif-panel.open{transform:translateY(0);opacity:1;}
 
+/* ── TOPBAR PILL ── */
+.id-pill{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.1);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.18);border-radius:16px;padding:8px 14px 8px 8px;}
+.id-info{display:flex;flex-direction:column;}
+.tb-actions{display:flex;align-items:center;gap:7px;}
+
 /* ── MISC ── */
 .month-tabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:12px;padding-bottom:2px;-webkit-overflow-scrolling:touch;}
 .month-tabs::-webkit-scrollbar{height:2px;}
@@ -329,14 +334,16 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     <div class="topbar-blob2"></div>
     <div class="topbar-blob3"></div>
     <div class="topbar-inner">
-      <div class="tb-left">
+      <!-- Identity pill -->
+      <div class="id-pill">
         <div class="tb-av" id="tbAv">?</div>
-        <div>
+        <div class="id-info">
           <div class="tb-name" id="tbName">Loading...</div>
           <div class="tb-role" id="tbRole">Employee Portal</div>
         </div>
       </div>
-      <div class="tb-right">
+      <!-- Action buttons — separate row, easy to tap -->
+      <div class="tb-actions">
         <button class="tb-btn" id="notifBtn" onclick="toggleNotifPanel()" title="Notifications">
           <i class="fa-solid fa-bell"></i>
           <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
@@ -349,9 +356,10 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
         </button>
       </div>
     </div>
+    <!-- Sync indicator with employee name -->
     <div class="sync-strip" id="syncStrip">
       <div class="sync-dot" id="syncDot"></div>
-      <span class="sync-txt" id="syncTxt">Live · syncing automatically</span>
+      <span class="sync-txt" id="syncTxt"><span id="syncName">DAM</span> · live</span>
     </div>
   </div>
 
@@ -591,6 +599,7 @@ async function enterApp(e){
   populateCats();
   renderHome();
   startRealtime();
+  setSyncUI('live');
   // Start periodic sync every 60s
   setInterval(silentSync, 60000);
 }
@@ -608,13 +617,15 @@ function doLogout(){
 
 function setSyncUI(state){
   const strip=document.getElementById('syncStrip');
-  const dot=document.getElementById('syncDot');
   const txt=document.getElementById('syncTxt');
+  const nameSpan=document.getElementById('syncName');
   if(!strip)return;
-  strip.className='sync-strip'+{syncing:' syncing',err:' err','':''}[state]||'';
-  if(dot)dot.id='syncDot';
-  if(txt)txt.textContent={syncing:'Syncing...',err:'Sync error · will retry',live:'Live · syncing automatically'}[state]||'Live · syncing automatically';
-  if(state==='live')setTimeout(()=>setSyncUI(''),3000);
+  const name=emp?.name?.split(' ')[0]||'DAM';
+  if(nameSpan)nameSpan.textContent=name;
+  strip.className='sync-strip '+(state||'live');
+  const msgs={live:` · live`,syncing:` · syncing...`,err:` · sync error`,offline:` · offline`};
+  if(txt)txt.innerHTML=`<span id="syncName">${name}</span>${msgs[state]||msgs.live}`;
+  if(state==='live')setTimeout(()=>setSyncUI('live'),3000);
 }
 
 async function silentSync(){
@@ -805,30 +816,51 @@ function renderHome(){
   document.getElementById('hmMonth').textContent=MONTHS[m]+' '+y;
   document.getElementById('hmAmount').textContent=fmt(total);
   document.getElementById('hmBase').textContent=fmt(base);
-  document.getElementById('hmOT').textContent=fmt(ot);
+  // Show OT hours for all, with pay if >0
+  const otHrs2=mRecs.reduce((s,r)=>s+(parseFloat(r.overtime)||0),0);
+  document.getElementById('hmOT').textContent=ot>0?fmt(ot):(otHrs2>0?otHrs2.toFixed(1)+'h':'£0.00');
+  // Bonus: only show if employee has any bonus ever
+  const lifetimeBonus=myAtt.reduce((s,r)=>s+(parseFloat(r.bonus)||0),0);
+  const bonusEl=document.getElementById('hmBonusWrap');
+  if(bonusEl)bonusEl.style.display=lifetimeBonus>0?'flex':'none';
   document.getElementById('hmBonus').textContent=fmt(bonus);
   document.getElementById('hmDays').textContent=pres+'/'+wD;
 
   // Payment status this month
   const payStM=myPaySt.find(p=>p.month===m&&p.year===y);
   const pmEl=document.getElementById('hmPayStatus');
-  if(payStM&&(payStM.bank_paid||payStM.cash_paid)){
-    const bc=payStM.bank_amt!=null?parseFloat(payStM.bank_amt):parseFloat(emp.bank_amt)||0;
-    const cash=Math.max(0,total-bc);
-    const both=payStM.bank_paid&&payStM.cash_paid;
-    const bankOnly=payStM.bank_paid&&!payStM.cash_paid;
-    pmEl.innerHTML=`<div style="background:var(--grnl);border:1px solid rgba(22,163,74,0.2);border-radius:var(--r);padding:12px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;">
-      <i class="fa-solid fa-circle-check" style="color:var(--grn);font-size:20px;flex-shrink:0;"></i>
-      <div style="flex:1;">
-        <div style="font-size:13px;font-weight:700;color:var(--grn);">${both?'Full Payment Confirmed ✓':bankOnly?'Bank Transfer Confirmed ✓':'Cash Payment Confirmed ✓'}</div>
-        <div style="font-size:12px;color:var(--txt2);margin-top:2px;">${payStM.bank_paid?`Bank: ${fmt(bc)} `:''} ${payStM.cash_paid?`Cash: ${fmt(cash)}`:''}</div>
-      </div>
-    </div>`;
-  } else if(total>0){
-    pmEl.innerHTML=`<div style="background:var(--ambl);border:1px solid rgba(217,119,6,0.2);border-radius:var(--r);padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:9px;">
-      <i class="fa-solid fa-clock" style="color:var(--amb);font-size:16px;flex-shrink:0;"></i>
-      <div style="font-size:13px;font-weight:600;color:var(--amb);">Payment pending · ${MONTHS[m]}</div>
-    </div>`;
+  if(total>0){
+    const bankSet=parseFloat(emp.bank_amt)||0;
+    const cashSet=Math.max(0,total-bankSet);
+    if(payStM&&(payStM.bank_paid||payStM.cash_paid)){
+      // Calculate how much is confirmed paid vs pending
+      const paidBank=payStM.bank_paid?(payStM.bank_custom!=null?parseFloat(payStM.bank_custom):bankSet):0;
+      const paidCash=payStM.cash_paid?(payStM.cash_custom!=null?parseFloat(payStM.cash_custom):cashSet):0;
+      const totalPaid=paidBank+paidCash;
+      const pending=Math.max(0,total-totalPaid);
+      const allPaid=pending<0.01;
+      pmEl.innerHTML=`<div style="background:${allPaid?'var(--grnl)':'#fffbeb'};border:1px solid ${allPaid?'rgba(22,163,74,0.25)':'rgba(217,119,6,0.25)'};border-radius:var(--r);padding:12px 15px;margin-bottom:12px;">
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:${pending>0?'8px':'0'};">
+          <i class="fa-solid fa-${allPaid?'circle-check':'clock'}" style="color:${allPaid?'var(--grn)':'var(--amb)'};font-size:18px;flex-shrink:0;"></i>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:${allPaid?'var(--grn)':'var(--amb)'};">Paid · ${fmt(totalPaid)}</div>
+            <div style="font-size:11px;color:var(--txt2);margin-top:1px;">${MONTHS[m]} ${y} ${allPaid?'· fully settled':''}</div>
+          </div>
+        </div>
+        ${pending>0?`<div style="display:flex;align-items:center;justify-content:space-between;background:var(--ambl);border-radius:8px;padding:7px 11px;">
+          <span style="font-size:12px;font-weight:600;color:var(--amb);">Pending</span>
+          <span style="font-size:13px;font-weight:800;color:var(--amb);">${fmt(pending)}</span>
+        </div>`:''}
+      </div>`;
+    } else {
+      pmEl.innerHTML=`<div style="background:var(--ambl);border:1px solid rgba(217,119,6,0.2);border-radius:var(--r);padding:12px 15px;margin-bottom:12px;display:flex;align-items:center;gap:9px;">
+        <i class="fa-solid fa-clock" style="color:var(--amb);font-size:18px;flex-shrink:0;"></i>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--amb);">Pending · ${fmt(total)}</div>
+          <div style="font-size:11px;color:var(--txt2);margin-top:1px;">${MONTHS[m]} ${y} · awaiting payment</div>
+        </div>
+      </div>`;
+    }
   } else pmEl.innerHTML='';
 
   // Stats
@@ -1038,20 +1070,36 @@ function renderPay(){
   const hrs=mRecs.reduce((s,r)=>s+(parseFloat(r.hours)||0),0);
   const otHrs=mRecs.reduce((s,r)=>s+(parseFloat(r.overtime)||0),0);
 
-  // Payment status
+  // Payment status - clean Paid/Pending display
   const payStM=myPaySt.find(p=>p.month===m&&p.year===y);
   const bankAmt=parseFloat(emp.bank_amt)||0;
   const cashAmt=Math.max(0,total-bankAmt);
   let payStatusHtml='';
-  if(payStM){
-    const bc=payStM.bank_custom!=null?parseFloat(payStM.bank_custom):bankAmt;
-    const cc=payStM.cash_custom!=null?parseFloat(payStM.cash_custom):cashAmt;
-    const allDone=(payStM.bank_paid||bankAmt===0)&&(payStM.cash_paid||cashAmt===0);
-    payStatusHtml=`<div style="background:${allDone?'var(--grnl)':'var(--ambl)'};border:1px solid ${allDone?'rgba(22,163,74,0.2)':'rgba(217,119,6,0.2)'};border-radius:var(--r);padding:13px 15px;margin-bottom:12px;">
-      <div style="font-size:13px;font-weight:700;color:${allDone?'var(--grn)':'var(--amb)'};margin-bottom:8px;"><i class="fa-solid ${allDone?'fa-circle-check':'fa-clock'}" style="margin-right:5px;"></i>${allDone?'Payment Fully Confirmed':'Payment In Progress'}</div>
-      ${bankAmt>0?`<div class="row-div"><span>Bank Transfer</span><div style="display:flex;align-items:center;gap:6px;"><span style="font-weight:700;">${fmt(bc)}</span>${payStM.bank_paid?'<i class="fa-solid fa-check-circle" style="color:var(--grn);"></i>':'<i class="fa-solid fa-clock" style="color:var(--amb);"></i>'}</div></div>`:''}
-      ${cashAmt>0?`<div class="row-div"><span>Cash</span><div style="display:flex;align-items:center;gap:6px;"><span style="font-weight:700;">${fmt(cc)}</span>${payStM.cash_paid?'<i class="fa-solid fa-check-circle" style="color:var(--grn);"></i>':'<i class="fa-solid fa-clock" style="color:var(--amb);"></i>'}</div></div>`:''}
-    </div>`;
+  if(total>0){
+    if(payStM&&(payStM.bank_paid||payStM.cash_paid)){
+      const paidB=payStM.bank_paid?(payStM.bank_custom!=null?parseFloat(payStM.bank_custom):bankAmt):0;
+      const paidC=payStM.cash_paid?(payStM.cash_custom!=null?parseFloat(payStM.cash_custom):cashAmt):0;
+      const totalPaid=paidB+paidC;
+      const pending=Math.max(0,total-totalPaid);
+      const allDone=pending<0.01;
+      payStatusHtml=`<div style="background:${allDone?'var(--grnl)':'#fffbeb'};border:1px solid ${allDone?'rgba(22,163,74,0.2)':'rgba(217,119,6,0.2)'};border-radius:var(--r);padding:14px 15px;margin-bottom:12px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:${pending>0?'10px':'0'};">
+          <i class="fa-solid fa-${allDone?'circle-check':'clock'}" style="color:${allDone?'var(--grn)':'var(--amb)'};font-size:20px;flex-shrink:0;"></i>
+          <div><div style="font-size:14px;font-weight:800;color:${allDone?'var(--grn)':'var(--amb)'};">Paid · ${fmt(totalPaid)}</div>
+          <div style="font-size:11px;color:var(--txt2);">${MONTHS[m]} ${y} · ${allDone?'fully settled':'partial payment received'}</div></div>
+        </div>
+        ${pending>0?`<div style="display:flex;align-items:center;justify-content:space-between;background:var(--ambl);border-radius:9px;padding:9px 13px;">
+          <div><div style="font-size:12px;font-weight:700;color:var(--amb);">Pending</div><div style="font-size:11px;color:var(--txt2);">remaining balance</div></div>
+          <div style="font-size:15px;font-weight:800;color:var(--amb);">${fmt(pending)}</div>
+        </div>`:''}
+      </div>`;
+    } else {
+      payStatusHtml=`<div style="background:var(--ambl);border:1px solid rgba(217,119,6,0.2);border-radius:var(--r);padding:14px 15px;margin-bottom:12px;display:flex;align-items:center;gap:11px;">
+        <i class="fa-solid fa-clock" style="color:var(--amb);font-size:20px;flex-shrink:0;"></i>
+        <div><div style="font-size:14px;font-weight:800;color:var(--amb);">Pending · ${fmt(total)}</div>
+        <div style="font-size:11px;color:var(--txt2);">${MONTHS[m]} ${y} · awaiting payment from office</div></div>
+      </div>`;
+    }
   }
 
   document.getElementById('payCards').innerHTML=`
@@ -1072,7 +1120,7 @@ function renderPay(){
       <div class="row-div"><span>Attendance Rate</span><strong style="color:${pct>=80?'var(--grn)':pct>=60?'var(--amb)':'var(--red)'};">${pct}%</strong></div>
       <div class="row-div"><span>Total Hours</span><strong>${hrs.toFixed(1)}h</strong></div>
       <div class="row-div"><span>Overtime Hours</span><strong style="color:var(--amb);">${otHrs.toFixed(1)}h</strong></div>
-      ${bonus>0?`<div class="row-div"><span>Bonus / Extra</span><strong style="color:var(--grn);">${fmt(bonus)}</strong></div>`:''}
+      ${(()=>{const lb=myAtt.reduce((s,r)=>s+(parseFloat(r.bonus)||0),0);return lb>0&&bonus>0?`<div class="row-div" style="background:var(--grnl);border-radius:8px;padding:9px 11px;margin:5px 0;"><span style="font-weight:700;color:var(--grn);">Bonus this month</span><strong style="color:var(--grn);">${fmt(bonus)}</strong></div>`:''})()}
       ${emp.bank_amt>0?`<div class="row-div"><span>Bank Transfer</span><strong>${fmt(emp.bank_amt)}</strong></div>`:''}
       ${cashAmt>0?`<div class="row-div"><span>Cash</span><strong>${fmt(cashAmt)}</strong></div>`:''}
     </div></div>`;
@@ -1092,8 +1140,8 @@ function renderPay(){
   document.getElementById('lifetimeStats').innerHTML=`
     <div class="row-div"><span>Total Days Worked</span><strong>${lt.days}</strong></div>
     <div class="row-div"><span>Total Hours</span><strong>${lt.hrs.toFixed(0)}h</strong></div>
-    <div class="row-div"><span>Total OT Hours</span><strong style="color:var(--amb);">${lt.ot.toFixed(0)}h</strong></div>
-    <div class="row-div"><span>Total Bonuses</span><strong style="color:var(--grn);">${fmt(lt.bonus)}</strong></div>`;
+    ${lt.ot>0?`<div class="row-div"><span>Total OT Hours</span><strong style="color:var(--amb);">${lt.ot.toFixed(0)}h</strong></div>`:''}
+    ${lt.bonus>0?`<div class="row-div" style="background:var(--grnl);border-radius:8px;padding:8px 11px;margin-top:4px;"><span style="font-weight:600;color:var(--grn);">Total Bonuses Received</span><strong style="color:var(--grn);">${fmt(lt.bonus)}</strong></div>`:''}`;
 }
 
 // ── MESSAGES ──
