@@ -260,6 +260,14 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .notif-panel.open{transform:translateY(0);opacity:1;}
 
 /* ── TOPBAR PILL ── */
+.pill-menu{position:absolute;top:100%;left:14px;background:var(--card);border:1px solid var(--bdr);border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,0.18);z-index:200;min-width:180px;overflow:hidden;animation:fadeUp 0.15s ease;}
+.pill-menu-item{display:flex;align-items:center;gap:10px;padding:12px 16px;font-size:13px;font-weight:600;color:var(--txt);cursor:pointer;border-bottom:0.5px solid var(--bdr);}
+.pill-menu-item:last-child{border-bottom:none;}
+.pill-menu-item:active{background:var(--card2);}
+.pill-menu-item i{width:16px;text-align:center;color:var(--txtm);}
+.pill-menu-item.logout{color:var(--red);}
+.pill-menu-item.logout i{color:var(--red);}
+.topbar{position:relative;}
 .id-pill{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.1);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.18);border-radius:16px;padding:8px 14px 8px 8px;}
 .id-info{display:flex;flex-direction:column;}
 .tb-actions{display:flex;align-items:center;gap:7px;}
@@ -334,15 +342,22 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     <div class="topbar-blob2"></div>
     <div class="topbar-blob3"></div>
     <div class="topbar-inner">
-      <!-- Identity pill -->
-      <div class="id-pill">
+      <!-- Identity pill - tap to see logout -->
+      <div class="id-pill" onclick="togglePillMenu()" id="idPill">
         <div class="tb-av" id="tbAv">?</div>
         <div class="id-info">
           <div class="tb-name" id="tbName">Loading...</div>
           <div class="tb-role" id="tbRole">Employee Portal</div>
         </div>
+        <i class="fa-solid fa-chevron-down" style="font-size:10px;opacity:0.5;margin-left:4px;"></i>
       </div>
-      <!-- Action buttons — separate row, easy to tap -->
+      <!-- Pill dropdown -->
+      <div class="pill-menu" id="pillMenu" style="display:none;">
+        <div class="pill-menu-item" onclick="toggleNotifPanel()"><i class="fa-solid fa-bell"></i>Notifications<span class="notif-badge" id="notifBadge2" style="display:none;position:static;width:auto;height:auto;border:none;animation:none;padding:0 5px;border-radius:10px;font-size:10px;background:#ef4444;color:#fff;"></span></div>
+        <div class="pill-menu-item" onclick="toggleTheme()"><i class="fa-solid fa-circle-half-stroke"></i>Toggle Theme</div>
+        <div class="pill-menu-item logout" onclick="doLogout()"><i class="fa-solid fa-right-from-bracket"></i>Sign Out</div>
+      </div>
+      <!-- Action buttons -->
       <div class="tb-actions">
         <button class="tb-btn" id="notifBtn" onclick="toggleNotifPanel()" title="Notifications">
           <i class="fa-solid fa-bell"></i>
@@ -351,15 +366,12 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
         <button class="tb-btn" onclick="toggleTheme()" title="Toggle theme">
           <i class="fa-solid fa-circle-half-stroke"></i>
         </button>
-        <button class="tb-btn" onclick="doLogout()" title="Sign out">
-          <i class="fa-solid fa-right-from-bracket"></i>
-        </button>
       </div>
     </div>
-    <!-- Sync indicator with employee name -->
-    <div class="sync-strip" id="syncStrip">
-      <div class="sync-dot" id="syncDot"></div>
-      <span class="sync-txt" id="syncTxt"><span id="syncName">DAM</span> · live</span>
+    <!-- Sync strip - name + colour status -->
+    <div class="sync-strip live" id="syncStrip">
+      <div class="sync-dot"></div>
+      <span class="sync-txt" id="syncTxt">· live</span>
     </div>
   </div>
 
@@ -541,6 +553,15 @@ function calcPay(e,rec){
   else if(pt==='daily'){const r=parseFloat(e.daily_rate)||0;base=(rec.status==='HD'?r*0.5:r)*wkM;}
   return{base,ot:otPay,total:base+otPay};
 }
+function togglePillMenu(){
+  const m=document.getElementById('pillMenu');
+  if(m)m.style.display=m.style.display==='none'?'block':'none';
+}
+document.addEventListener('click',e=>{
+  const pill=document.getElementById('idPill');
+  const menu=document.getElementById('pillMenu');
+  if(menu&&pill&&!pill.contains(e.target))menu.style.display='none';
+});
 function toggleTheme(){const h=document.documentElement;h.dataset.theme=h.dataset.theme==='dark'?'light':'dark';localStorage.setItem('dam_emp_theme',h.dataset.theme);}
 (()=>document.documentElement.dataset.theme=localStorage.getItem('dam_emp_theme')||'light')();
 
@@ -618,14 +639,11 @@ function doLogout(){
 function setSyncUI(state){
   const strip=document.getElementById('syncStrip');
   const txt=document.getElementById('syncTxt');
-  const nameSpan=document.getElementById('syncName');
   if(!strip)return;
-  const name=emp?.name?.split(' ')[0]||'DAM';
-  if(nameSpan)nameSpan.textContent=name;
-  strip.className='sync-strip '+(state||'live');
-  const msgs={live:` · live`,syncing:` · syncing...`,err:` · sync error`,offline:` · offline`};
-  if(txt)txt.innerHTML=`<span id="syncName">${name}</span>${msgs[state]||msgs.live}`;
-  if(state==='live')setTimeout(()=>setSyncUI('live'),3000);
+  const s=state||'live';
+  strip.className='sync-strip '+s;
+  const msgs={live:'· live',syncing:'· syncing...',err:'· sync error — tap to retry',offline:'· offline'};
+  if(txt)txt.textContent=msgs[s]||msgs.live;
 }
 
 async function silentSync(){
@@ -959,20 +977,59 @@ function renderAtt(){
   for(let d=1;d<=days;d++){
     const dt=new Date(y,m,d),key=dk(dt),rec=mRecs.find(r=>r.date===key);
     const sun=isSun(dt),sat=dt.getDay()===6;
-    const bg=sun?'rgba(165,180,252,0.1)':sat?'rgba(196,181,253,0.07)':'';
     const dayL=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][dt.getDay()];
-    if(!rec&&sun)continue;
-    html+=`<div style="${bg?'background:'+bg+';border-radius:8px;padding:7px 9px;':'padding:7px 0;'}border-bottom:0.5px solid var(--bdr);display:flex;align-items:center;gap:9px;">
-      <div style="font-size:22px;font-weight:700;width:28px;text-align:center;color:${sun?'#6366f1':'var(--txtm)'};">${d}</div>
-      <div style="font-size:11px;color:var(--txtm);width:26px;">${dayL}</div>
+    // Fixed-width date column ensures straight alignment
+    const dateCol=`<div style="font-size:18px;font-weight:800;width:32px;min-width:32px;text-align:right;line-height:1;color:${sun?'#6366f1':sat?'#7c3aed':'var(--txtm)'};">${d}</div>`;
+    const dayCol=`<div style="font-size:10px;font-weight:600;color:var(--txtm);width:28px;min-width:28px;text-transform:uppercase;letter-spacing:0.04em;">${dayL}</div>`;
+
+    if(sun){
+      // Creative Sunday banner - always show even if not worked
+      const worked=rec&&isP(rec.status);
+      const sunEmojis=['☀️','🌞','✨','🌅','⭐'];
+      const emoji=sunEmojis[d%sunEmojis.length];
+      if(worked){
+        // Worked Sunday - gold banner
+        html+=`<div style="background:linear-gradient(135deg,#fef3c7,#fde68a);border:1px solid rgba(245,158,11,0.3);border-radius:12px;padding:10px 13px;margin:5px 0;display:flex;align-items:center;gap:9px;">
+          ${dateCol}${dayCol}
+          <div style="flex:1;display:flex;align-items:center;gap:7px;">
+            <span style="font-size:18px;">${emoji}</span>
+            <div>
+              <div style="font-size:12px;font-weight:800;color:#92400e;">Sunday · Worked</div>
+              ${rec.sign_in?`<div style="font-size:11px;color:#b45309;">${rec.sign_in}–${rec.sign_out||'?'}</div>`:''}
+            </div>
+          </div>
+          <div style="text-align:right;">${rec.hours?`<div style="font-size:13px;font-weight:800;color:#92400e;">${rec.hours}h</div>`:''}</div>
+        </div>`;
+      } else {
+        // Rest Sunday - soft indigo banner
+        html+=`<div style="background:linear-gradient(135deg,rgba(238,242,255,0.8),rgba(224,231,255,0.6));border:1px solid rgba(99,102,241,0.15);border-radius:12px;padding:9px 13px;margin:4px 0;display:flex;align-items:center;gap:9px;">
+          ${dateCol}${dayCol}
+          <div style="flex:1;display:flex;align-items:center;gap:7px;">
+            <span style="font-size:16px;">${emoji}</span>
+            <div style="font-size:12px;font-weight:600;color:#4f46e5;opacity:0.7;">Rest Day</div>
+          </div>
+        </div>`;
+      }
+      continue;
+    }
+
+    // Regular days
+    const bg=sat?'rgba(196,181,253,0.06)':'';
+    html+=`<div style="${bg?'background:'+bg+';border-radius:8px;padding:8px 9px;margin:2px 0;':'padding:8px 0;'}border-bottom:0.5px solid var(--bdr);display:flex;align-items:center;gap:9px;">
+      ${dateCol}${dayCol}
       <div style="flex:1;">
-        ${rec?`<span class="att-box ${rec.status}" style="width:auto;padding:2px 8px;border-radius:6px;font-size:11px;">${STATUSES[rec.status]||rec.status}</span>
-        ${rec.sign_in?`<span style="font-size:11px;color:var(--txtm);margin-left:6px;">${rec.sign_in}–${rec.sign_out||'?'}</span>`:''}`:
-        `<span style="font-size:12px;color:var(--txtm);">${sun?'☀ Sunday':'Not marked'}</span>`}
+        ${rec
+          ?`<div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;">
+              <span class="att-box ${rec.status}" style="width:auto;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;">${STATUSES[rec.status]||rec.status}</span>
+              ${rec.sign_in?`<span style="font-size:11px;color:var(--txtm);">${rec.sign_in}–${rec.sign_out||'?'}</span>`:''}
+            </div>`
+          :`<span style="font-size:12px;color:var(--txtm);font-style:italic;">${sat?'Saturday':'Not marked'}</span>`
+        }
       </div>
       <div style="text-align:right;flex-shrink:0;">
-        ${rec?.hours?`<div style="font-size:12px;font-weight:600;">${rec.hours}h</div>`:''}
-        ${rec?.bonus?`<div style="font-size:11px;font-weight:600;color:var(--grn);">+${fmt(rec.bonus)}</div>`:''}
+        ${rec?.hours?`<div style="font-size:13px;font-weight:700;">${parseFloat(rec.hours).toFixed(0)}h</div>`:''}
+        ${rec?.overtime>0?`<div style="font-size:10px;color:var(--amb);font-weight:600;">+${parseFloat(rec.overtime).toFixed(1)}h OT</div>`:''}
+        ${rec?.bonus?`<div style="font-size:11px;font-weight:700;color:var(--grn);">+${fmt(rec.bonus)}</div>`:''}
       </div>
     </div>`;
   }
@@ -1121,18 +1178,63 @@ function renderPay(){
       <div class="row-div"><span>Total Hours</span><strong>${hrs.toFixed(1)}h</strong></div>
       <div class="row-div"><span>Overtime Hours</span><strong style="color:var(--amb);">${otHrs.toFixed(1)}h</strong></div>
       ${(()=>{const lb=myAtt.reduce((s,r)=>s+(parseFloat(r.bonus)||0),0);return lb>0&&bonus>0?`<div class="row-div" style="background:var(--grnl);border-radius:8px;padding:9px 11px;margin:5px 0;"><span style="font-weight:700;color:var(--grn);">Bonus this month</span><strong style="color:var(--grn);">${fmt(bonus)}</strong></div>`:''})()}
-      ${emp.bank_amt>0?`<div class="row-div"><span>Bank Transfer</span><strong>${fmt(emp.bank_amt)}</strong></div>`:''}
-      ${cashAmt>0?`<div class="row-div"><span>Cash</span><strong>${fmt(cashAmt)}</strong></div>`:''}
     </div></div>`;
 
-  // Salary history
-  document.getElementById('payHistory').innerHTML=mySalHist.length?`<div class="card"><div class="card-b">${mySalHist.map((h,i)=>`
-    <div class="row-div">
-      <div><div style="font-size:13px;font-weight:600;">${fmt(h.new_rate)}${h.pay_type==='fixed'?'/mo':h.pay_type==='daily'?'/day':'/h'}</div>
-      <div style="font-size:11px;color:var(--txtm);">From ${fmtD(h.effective_from)}${h.old_rate>0?` · was ${fmt(h.old_rate)}`:' · Starting rate'}</div></div>
-      ${i===0?'<span style="background:var(--accl);color:var(--acc);font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;">Current</span>':''}
-    </div>`).join('')}</div></div>`:
-  '<div class="empty-s"><i class="fa-solid fa-clock-rotate-left"></i><p>No pay history yet</p></div>';
+  // Pay history - show each month that has been paid with running balance
+  const allPaidMonths=myPaySt.filter(p=>p.bank_paid||p.cash_paid).sort((a,b)=>b.year-a.year||b.month-a.month);
+  if(allPaidMonths.length>0){
+    // Calculate each month's total
+    let runningTotal=0;
+    const rows=allPaidMonths.map(ps=>{
+      const mR=myAtt.filter(r=>{const d=new Date(r.date+'T00:00:00');return d.getMonth()===ps.month&&d.getFullYear()===ps.year;});
+      const mE=myExp.filter(e=>{const d=new Date(e.date+'T00:00:00');return d.getMonth()===ps.month&&d.getFullYear()===ps.year;});
+      const aR=mR.filter(r=>isP(r.status));
+      let mb=0,mot=0;
+      if(emp.pay_type==='fixed')mb=parseFloat(emp.salary)||0;
+      else aR.forEach(r=>{const p=calcPay(emp,r);mb+=p.base;mot+=p.ot;});
+      const mBonus=mR.reduce((s,r)=>s+(parseFloat(r.bonus)||0),0);
+      const mTotal=mb+mot+mBonus;
+      const paidB=ps.bank_paid?(ps.bank_custom!=null?parseFloat(ps.bank_custom):(parseFloat(emp.bank_amt)||0)):0;
+      const paidC=ps.cash_paid?(ps.cash_custom!=null?parseFloat(ps.cash_custom):Math.max(0,mTotal-(parseFloat(emp.bank_amt)||0))):0;
+      const paid=paidB+paidC;
+      runningTotal+=paid;
+      const isThisMonth=ps.month===m&&ps.year===y;
+      return`<div style="display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:0.5px solid var(--bdr);${isThisMonth?'background:var(--accl);border-radius:9px;padding:11px 10px;margin:3px 0;':''}">
+        <div style="width:36px;height:36px;border-radius:10px;background:${isThisMonth?'var(--acc)':'var(--grnl)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i class="fa-solid fa-check" style="color:${isThisMonth?'#fff':'var(--grn)'};font-size:13px;"></i>
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:700;${isThisMonth?'color:var(--acc);':''}">${MONTHS[ps.month]} ${ps.year}</div>
+          <div style="font-size:11px;color:var(--txtm);">${aR.filter(r=>new Date(r.date+'T00:00:00').getDay()!==0).length} days worked</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:14px;font-weight:800;color:var(--grn);">${fmt(paid)}</div>
+          <div style="font-size:10px;color:var(--txtm);">Running: ${fmt(runningTotal)}</div>
+        </div>
+      </div>`;
+    }).join('');
+    const grandTotal=allPaidMonths.reduce((s,ps)=>{
+      const mR=myAtt.filter(r=>{const d=new Date(r.date+'T00:00:00');return d.getMonth()===ps.month&&d.getFullYear()===ps.year;});
+      const aR=mR.filter(r=>isP(r.status));
+      let mb=0,mot=0;
+      if(emp.pay_type==='fixed')mb=parseFloat(emp.salary)||0;
+      else aR.forEach(r=>{const p=calcPay(emp,r);mb+=p.base;mot+=p.ot;});
+      const mBonus=mR.reduce((s2,r)=>s2+(parseFloat(r.bonus)||0),0);
+      const mTotal=mb+mot+mBonus;
+      const paidB=ps.bank_paid?(ps.bank_custom!=null?parseFloat(ps.bank_custom):(parseFloat(emp.bank_amt)||0)):0;
+      const paidC=ps.cash_paid?(ps.cash_custom!=null?parseFloat(ps.cash_custom):Math.max(0,mTotal-(parseFloat(emp.bank_amt)||0))):0;
+      return s+paidB+paidC;
+    },0);
+    document.getElementById('payHistory').innerHTML=`<div class="card"><div class="card-b">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0 13px;border-bottom:1px solid var(--bdr);margin-bottom:4px;">
+        <div style="font-size:12px;font-weight:700;color:var(--txtm);text-transform:uppercase;letter-spacing:0.05em;">${allPaidMonths.length} months paid</div>
+        <div style="font-size:15px;font-weight:800;color:var(--grn);">Total: ${fmt(grandTotal)}</div>
+      </div>
+      ${rows}
+    </div></div>`;
+  } else {
+    document.getElementById('payHistory').innerHTML='<div class="empty-s"><i class="fa-solid fa-clock-rotate-left"></i><p>No payments recorded yet</p></div>';
+  }
 
   // Lifetime
   let lt={days:0,hrs:0,ot:0,bonus:0,total:0};
