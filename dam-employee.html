@@ -237,6 +237,32 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 @keyframes shimmer{0%{background-position:-200px 0;}100%{background-position:200px 0;}}
 .loading-shimmer{background:linear-gradient(90deg,var(--card2) 25%,var(--bdr) 50%,var(--card2) 75%);background-size:400px 100%;animation:shimmer 1.5s infinite;}
 
+/* ── SUNDAY ANIMATIONS ── */
+@keyframes float1{0%,100%{transform:translateY(0) rotate(0deg);}33%{transform:translateY(-8px) rotate(3deg);}66%{transform:translateY(-4px) rotate(-2deg);}}
+@keyframes float2{0%,100%{transform:translateY(0) rotate(0deg);}50%{transform:translateY(-10px) rotate(-4deg);}}
+@keyframes float3{0%,100%{transform:translateY(0) scale(1);}50%{transform:translateY(-6px) scale(1.05);}}
+@keyframes wave{0%,100%{transform:rotate(0deg);}25%{transform:rotate(15deg);}75%{transform:rotate(-10deg);}}
+@keyframes sunRise{0%{transform:translateY(6px);opacity:0.7;}100%{transform:translateY(0);opacity:1;}}
+@keyframes drift{0%{transform:translateX(0) translateY(0);}25%{transform:translateX(4px) translateY(-3px);}50%{transform:translateX(8px) translateY(0);}75%{transform:translateX(4px) translateY(3px);}100%{transform:translateX(0) translateY(0);}}
+@keyframes shimmerGold{0%{background-position:-300% center;}100%{background-position:300% center;}}
+@keyframes twinkle{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.4;transform:scale(0.7);}}
+@keyframes cloudMove{0%{transform:translateX(-5px);}50%{transform:translateX(5px);}100%{transform:translateX(-5px);}}
+@keyframes sunGlow{0%,100%{box-shadow:0 0 15px rgba(251,191,36,0.4),0 0 30px rgba(251,191,36,0.15);}50%{box-shadow:0 0 25px rgba(251,191,36,0.7),0 0 50px rgba(251,191,36,0.25);}}
+@keyframes bgShift{0%{background-position:0% 50%;}50%{background-position:100% 50%;}100%{background-position:0% 50%;}}
+@keyframes bounce{0%,100%{transform:translateY(0);}40%{transform:translateY(-5px);}60%{transform:translateY(-3px);}}
+.sun-worked-banner{
+  position:relative;overflow:hidden;border-radius:14px;margin:5px 0;
+  background:linear-gradient(135deg,#fef3c7,#fde68a,#fcd34d,#fbbf24);
+  background-size:300% 300%;animation:bgShift 4s ease infinite;
+  border:1px solid rgba(217,119,6,0.3);padding:0;
+}
+.sun-rest-banner{
+  position:relative;overflow:hidden;border-radius:14px;margin:4px 0;
+  background:linear-gradient(135deg,#e0f2fe,#bae6fd,#e0e7ff,#ddd6fe);
+  background-size:300% 300%;animation:bgShift 6s ease infinite;
+  border:1px solid rgba(99,102,241,0.2);padding:0;
+}
+
 /* Pill tags */
 .pill-tag{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
 
@@ -340,10 +366,10 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     <div class="topbar-bg"></div>
     <div class="topbar-blob1"></div>
     <div class="topbar-blob2"></div>
-    <div class="topbar-blob3"></div>
-    <div class="topbar-inner">
-      <!-- Identity pill - tap to see logout -->
-      <div class="id-pill" onclick="togglePillMenu()" id="idPill">
+
+    <div class="topbar-inner" style="justify-content:space-between;align-items:center;">
+      <!-- Identity pill - tap to see logout - LEFT ALIGNED -->
+      <div class="id-pill" onclick="togglePillMenu()" id="idPill" style="flex-shrink:1;min-width:0;max-width:65%;">
         <div class="tb-av" id="tbAv">?</div>
         <div class="id-info">
           <div class="tb-name" id="tbName">Loading...</div>
@@ -983,30 +1009,81 @@ function renderAtt(){
     const dayCol=`<div style="font-size:10px;font-weight:600;color:var(--txtm);width:28px;min-width:28px;text-transform:uppercase;letter-spacing:0.04em;">${dayL}</div>`;
 
     if(sun){
-      // Creative Sunday banner - always show even if not worked
       const worked=rec&&isP(rec.status);
-      const sunEmojis=['☀️','🌞','✨','🌅','⭐'];
-      const emoji=sunEmojis[d%sunEmojis.length];
+      const weekNum=Math.floor((d-1)/7); // 0,1,2,3,4
+
       if(worked){
-        // Worked Sunday - gold banner
-        html+=`<div style="background:linear-gradient(135deg,#fef3c7,#fde68a);border:1px solid rgba(245,158,11,0.3);border-radius:12px;padding:10px 13px;margin:5px 0;display:flex;align-items:center;gap:9px;">
-          ${dateCol}${dayCol}
-          <div style="flex:1;display:flex;align-items:center;gap:7px;">
-            <span style="font-size:18px;">${emoji}</span>
-            <div>
-              <div style="font-size:12px;font-weight:800;color:#92400e;">Sunday · Worked</div>
-              ${rec.sign_in?`<div style="font-size:11px;color:#b45309;">${rec.sign_in}–${rec.sign_out||'?'}</div>`:''}
+        // WORKED SUNDAY — animated gold banner with sun
+        html+=`<div class="sun-worked-banner">
+          <!-- Stars twinkling in background -->
+          <div style="position:absolute;inset:0;overflow:hidden;">
+            ${[...Array(6)].map((_,i)=>`<div style="position:absolute;width:4px;height:4px;border-radius:50%;background:#fbbf24;opacity:0.6;top:${10+i*12}%;left:${10+i*14}%;animation:twinkle ${1.5+i*0.4}s ease-in-out ${i*0.3}s infinite;"></div>`).join('')}
+          </div>
+          <div style="position:relative;padding:11px 13px;display:flex;align-items:center;gap:9px;">
+            ${dateCol}${dayCol}
+            <div style="flex:1;">
+              <div style="font-size:13px;font-weight:800;color:#78350f;letter-spacing:-0.2px;">Sunday — Worked 💪</div>
+              <div style="font-size:11px;color:#92400e;">${rec.sign_in?rec.sign_in+'–'+(rec.sign_out||'?'):'Full day'}</div>
+            </div>
+            <div style="text-align:center;flex-shrink:0;">
+              <div style="width:44px;height:44px;border-radius:50%;background:rgba(251,191,36,0.25);display:flex;align-items:center;justify-content:center;animation:sunGlow 2s ease-in-out infinite;">
+                <span style="font-size:22px;animation:float1 3s ease-in-out infinite;">☀️</span>
+              </div>
+              ${rec.hours?`<div style="font-size:12px;font-weight:800;color:#78350f;margin-top:3px;">${rec.hours}h</div>`:''}
             </div>
           </div>
-          <div style="text-align:right;">${rec.hours?`<div style="font-size:13px;font-weight:800;color:#92400e;">${rec.hours}h</div>`:''}</div>
         </div>`;
       } else {
-        // Rest Sunday - soft indigo banner
-        html+=`<div style="background:linear-gradient(135deg,rgba(238,242,255,0.8),rgba(224,231,255,0.6));border:1px solid rgba(99,102,241,0.15);border-radius:12px;padding:9px 13px;margin:4px 0;display:flex;align-items:center;gap:9px;">
-          ${dateCol}${dayCol}
-          <div style="flex:1;display:flex;align-items:center;gap:7px;">
-            <span style="font-size:16px;">${emoji}</span>
-            <div style="font-size:12px;font-weight:600;color:#4f46e5;opacity:0.7;">Rest Day</div>
+        // REST SUNDAY — animated themed banners rotating each week
+        const themes=[
+          // Week 0 — Beach & Palm trees
+          {bg:'linear-gradient(135deg,#0ea5e9,#0284c7,#7dd3fc,#bae6fd)',scene:`
+            <div style="position:absolute;bottom:0;left:0;right:0;height:18px;background:rgba(251,191,36,0.25);border-radius:0 0 14px 14px;"></div>
+            <div style="position:absolute;bottom:14px;right:14px;font-size:28px;animation:float2 4s ease-in-out infinite;">🌴</div>
+            <div style="position:absolute;bottom:14px;right:48px;font-size:18px;animation:float1 5s ease-in-out 0.5s infinite;">🌴</div>
+            <div style="position:absolute;top:8px;left:50%;font-size:26px;animation:float3 3.5s ease-in-out infinite;transform:translateX(-50%);">☀️</div>
+            <div style="position:absolute;top:6px;right:22px;font-size:11px;animation:cloudMove 5s ease-in-out infinite;">☁️</div>`,
+            label:'Beach Day 🏖️',sub:'Relax, you earned it',col:'#0c4a6e'},
+          // Week 1 — Mountain hike
+          {bg:'linear-gradient(135deg,#6ee7b7,#34d399,#a7f3d0,#ecfdf5)',scene:`
+            <div style="position:absolute;bottom:0;left:0;right:0;height:22px;background:rgba(52,211,153,0.2);border-radius:0 0 14px 14px;"></div>
+            <div style="position:absolute;bottom:14px;left:10px;font-size:24px;animation:float1 6s ease-in-out infinite;">🏔️</div>
+            <div style="position:absolute;bottom:12px;left:42px;font-size:18px;animation:float2 5s ease-in-out 1s infinite;">🌲</div>
+            <div style="position:absolute;top:7px;right:12px;font-size:20px;animation:drift 8s ease-in-out infinite;">🦅</div>
+            <div style="position:absolute;top:5px;left:12px;font-size:13px;animation:cloudMove 7s ease-in-out infinite;">☁️</div>`,
+            label:'Adventure Day 🏔️',sub:'Go explore something new',col:'#064e3b'},
+          // Week 2 — Family time
+          {bg:'linear-gradient(135deg,#fce7f3,#fbcfe8,#f9a8d4,#fdf2f8)',scene:`
+            <div style="position:absolute;top:6px;right:10px;font-size:26px;animation:bounce 2s ease-in-out infinite;">👨‍👩‍👧</div>
+            <div style="position:absolute;bottom:8px;left:10px;font-size:20px;animation:float1 4s ease-in-out infinite;">🏠</div>
+            <div style="position:absolute;bottom:10px;left:40px;font-size:14px;animation:float2 3s ease-in-out 0.5s infinite;">🌸</div>
+            <div style="position:absolute;bottom:8px;left:62px;font-size:14px;animation:float3 4s ease-in-out 1s infinite;">🌺</div>`,
+            label:'Family Time 🏠',sub:'The best things in life',col:'#831843'},
+          // Week 3 — Rest & recharge
+          {bg:'linear-gradient(135deg,#ede9fe,#ddd6fe,#c4b5fd,#f5f3ff)',scene:`
+            <div style="position:absolute;top:5px;right:10px;font-size:26px;animation:float3 5s ease-in-out infinite;">🌙</div>
+            <div style="position:absolute;top:8px;right:40px;font-size:12px;animation:twinkle 2s ease-in-out 0.5s infinite;">⭐</div>
+            <div style="position:absolute;top:4px;left:14px;font-size:14px;animation:twinkle 1.8s ease-in-out 0.2s infinite;">✨</div>
+            <div style="position:absolute;bottom:8px;left:12px;font-size:22px;animation:float1 6s ease-in-out infinite;">😴</div>
+            <div style="position:absolute;bottom:8px;left:44px;font-size:18px;animation:float2 4s ease-in-out 1s infinite;">☕</div>`,
+            label:'Recharge Day 😴',sub:'Rest well, work hard tomorrow',col:'#4c1d95'},
+          // Week 4 — Sport & fitness  
+          {bg:'linear-gradient(135deg,#d1fae5,#a7f3d0,#6ee7b7,#ecfdf5)',scene:`
+            <div style="position:absolute;top:5px;right:10px;font-size:24px;animation:bounce 1.5s ease-in-out infinite;">⚽</div>
+            <div style="position:absolute;bottom:8px;right:12px;font-size:20px;animation:float1 4s ease-in-out infinite;">🏃</div>
+            <div style="position:absolute;top:8px;left:12px;font-size:16px;animation:float2 5s ease-in-out 1s infinite;">🏅</div>
+            <div style="position:absolute;bottom:8px;left:12px;font-size:16px;animation:twinkle 2s ease-in-out infinite;">💪</div>`,
+            label:'Active Sunday 🏃',sub:'Stay healthy, stay happy',col:'#065f46'}
+        ];
+        const th=themes[weekNum%themes.length];
+        html+=`<div class="sun-rest-banner" style="background:${th.bg};">
+          <div style="position:absolute;inset:0;overflow:hidden;">${th.scene}</div>
+          <div style="position:relative;padding:12px 13px;display:flex;align-items:center;gap:9px;">
+            ${dateCol}${dayCol}
+            <div style="flex:1;">
+              <div style="font-size:13px;font-weight:800;color:${th.col};letter-spacing:-0.2px;">${th.label}</div>
+              <div style="font-size:11px;color:${th.col};opacity:0.7;">${th.sub}</div>
+            </div>
           </div>
         </div>`;
       }
