@@ -164,6 +164,13 @@ body.sunday-active{background:linear-gradient(180deg,#d1fae5 0%,#f0fdf4 30%,#f1f
 .apr-status.approved{background:var(--grnl);color:var(--grn);}
 .apr-status.rejected{background:var(--redl);color:var(--red);}
 
+/* ── HOUR/MIN PICKER ── */
+.hr-btn{width:44px;height:44px;border-radius:10px;border:1.5px solid var(--bdr);background:var(--card);font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;color:var(--txt);}
+.hr-btn:active{transform:scale(0.93);}
+.hr-btn.sel{background:var(--acc);color:#fff;border-color:var(--acc);box-shadow:0 3px 10px rgba(37,99,235,0.3);}
+.min-btn{width:52px;height:40px;border-radius:10px;border:1.5px solid var(--bdr);background:var(--card);font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;color:var(--txt);}
+.min-btn:active{transform:scale(0.93);}
+.min-btn.sel{background:var(--acc);color:#fff;border-color:var(--acc);box-shadow:0 3px 10px rgba(37,99,235,0.3);}
 /* ── FORM ── */
 .fg{margin-bottom:12px;}
 .fg label{display:block;font-size:12px;font-weight:600;color:var(--txt2);margin-bottom:5px;}
@@ -453,12 +460,92 @@ body.sunday-active{background:linear-gradient(180deg,#d1fae5 0%,#f0fdf4 30%,#f1f
 
     <!-- ATTENDANCE -->
     <div class="pg" id="pg-att">
+      <!-- Today mark button -->
+      <div id="todayMarkSection"></div>
       <div class="sec">Attendance History</div>
       <div class="month-tabs" id="attTabs"></div>
       <div class="att-strip" style="flex-wrap:wrap;overflow:visible;gap:6px;padding-bottom:0;margin-bottom:14px;" id="attStrip"></div>
       <div class="card">
         <div class="card-h"><span class="card-t" id="attTitle">Records</span><span class="card-s" id="attSummary"></span></div>
         <div class="card-b" id="attRecords"></div>
+      </div>
+      <!-- My requests -->
+      <div class="sec">My Requests</div>
+      <div id="myAttReqsList"></div>
+    </div>
+
+    <!-- MARK ATTENDANCE MODAL -->
+    <div id="markModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:500;display:none;align-items:flex-end;justify-content:center;">
+      <div style="background:var(--card);border-radius:24px 24px 0 0;width:100%;max-width:430px;padding:20px 18px 32px;max-height:92vh;overflow-y:auto;">
+        <div style="width:36px;height:4px;border-radius:2px;background:var(--bdr);margin:0 auto 18px;"></div>
+        <div style="font-size:17px;font-weight:800;margin-bottom:4px;" id="markModalTitle">Mark Attendance</div>
+        <div style="font-size:12px;color:var(--txtm);margin-bottom:20px;" id="markModalDate"></div>
+
+        <!-- Standard hours info box -->
+        <div style="background:var(--accl);border:1px solid rgba(37,99,235,0.2);border-radius:12px;padding:11px 14px;margin-bottom:18px;display:flex;align-items:center;gap:10px;">
+          <i class="fa-solid fa-clock" style="color:var(--acc);font-size:16px;flex-shrink:0;"></i>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--acc);">Standard Hours: 09:00 – 17:00 (8h)</div>
+            <div style="font-size:11px;color:var(--txt2);margin-top:1px;">Enter your actual start/finish. Any difference will show as late/early.</div>
+          </div>
+        </div>
+
+        <!-- START TIME -->
+        <div style="margin-bottom:18px;">
+          <div style="font-size:13px;font-weight:700;margin-bottom:10px;">What time did you start?</div>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <div style="flex:1;">
+              <div style="font-size:11px;color:var(--txtm);margin-bottom:5px;text-align:center;">Hour</div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;" id="startHourPicker"></div>
+            </div>
+            <div style="font-size:22px;font-weight:800;color:var(--txtm);padding-bottom:0;">:</div>
+            <div style="flex:0 0 auto;">
+              <div style="font-size:11px;color:var(--txtm);margin-bottom:5px;text-align:center;">Min</div>
+              <div style="display:flex;flex-direction:column;gap:6px;" id="startMinPicker">
+                <div class="min-btn" onclick="selMin('start','00')" data-v="00">:00</div>
+                <div class="min-btn" onclick="selMin('start','30')" data-v="30">:30</div>
+              </div>
+            </div>
+          </div>
+          <div style="text-align:center;margin-top:9px;font-size:13px;font-weight:600;" id="startPreview">—</div>
+        </div>
+
+        <!-- END TIME -->
+        <div style="margin-bottom:18px;">
+          <div style="font-size:13px;font-weight:700;margin-bottom:10px;">What time did you finish?</div>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <div style="flex:1;">
+              <div style="font-size:11px;color:var(--txtm);margin-bottom:5px;text-align:center;">Hour</div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;" id="endHourPicker"></div>
+            </div>
+            <div style="font-size:22px;font-weight:800;color:var(--txtm);">:</div>
+            <div style="flex:0 0 auto;">
+              <div style="font-size:11px;color:var(--txtm);margin-bottom:5px;text-align:center;">Min</div>
+              <div style="display:flex;flex-direction:column;gap:6px;" id="endMinPicker">
+                <div class="min-btn" onclick="selMin('end','00')" data-v="00">:00</div>
+                <div class="min-btn" onclick="selMin('end','30')" data-v="30">:30</div>
+              </div>
+            </div>
+          </div>
+          <div style="text-align:center;margin-top:9px;font-size:13px;font-weight:600;" id="endPreview">—</div>
+        </div>
+
+        <!-- Calculated result preview -->
+        <div id="markCalcPreview" style="display:none;border-radius:12px;padding:12px 14px;margin-bottom:16px;text-align:center;">
+          <div style="font-size:22px;font-weight:800;" id="calcHoursDisp">—</div>
+          <div style="font-size:12px;" id="calcStatusDisp">—</div>
+        </div>
+
+        <!-- Note -->
+        <div class="fg" style="margin-bottom:16px;">
+          <label>Note (optional)</label>
+          <input type="text" id="markNote" placeholder="e.g. Doctor appointment, traffic...">
+        </div>
+
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-o" onclick="closeMarkModal()" style="flex:1;">Cancel</button>
+          <button class="btn btn-p" onclick="submitAttRequest()" style="flex:2;"><i class="fa-solid fa-paper-plane"></i>Send Request</button>
+        </div>
       </div>
     </div>
 
@@ -545,7 +632,7 @@ const STATUSES={P:'Present',A:'Absent',L:'Annual Leave',S:'Sick Leave',H:'Bank H
 
 // ── STATE ──
 let emp=null, allEmps=[], cfg={};
-let myAtt=[], myExp=[], myMsgs=[], myBatches=[], mySalHist=[], myPaySt=[];
+let myAtt=[], myExp=[], myMsgs=[], myBatches=[], mySalHist=[], myPaySt=[], myAttReqs=[];
 let notifications=[];
 let pinEntry='', selEmpId='';
 let receiptFile=null;
@@ -684,17 +771,19 @@ function setSyncUI(state){
 async function silentSync(){
   if(!emp)return;
   setSyncUI('syncing');
-  const [attR,expR,msgR,batR,payStR]=await Promise.all([
+  const [attR,expR,msgR,batR,payStR,attReqR2]=await Promise.all([
     SB.from('attendance').select('*').eq('employee_id',emp.id).order('date',{ascending:false}),
     SB.from('expenses').select('*').eq('employee_id',emp.id).order('date',{ascending:false}),
     SB.from('messages').select('*').eq('employee_id',emp.id).order('created_at'),
     SB.from('expense_batches').select('*').eq('employee_id',emp.id).order('submitted_at',{ascending:false}),
-    SB.from('payment_status').select('*').eq('employee_id',emp.id)
+    SB.from('payment_status').select('*').eq('employee_id',emp.id),
+    SB.from('attendance_requests').select('*').eq('employee_id',emp.id).order('date',{ascending:false})
   ]);
   const hadNewMsg=myMsgs.length<(msgR.data||[]).length;
   myAtt=attR.data||[];myExp=expR.data||[];myMsgs=msgR.data||[];
   myBatches=batR.error?myBatches:batR.data||[];
   myPaySt=payStR.error?myPaySt:payStR.data||[];
+  myAttReqs=attReqR2.error?myAttReqs:attReqR2.data||[];
   buildNotifications();updateBadges();
   setSyncUI('live');
   // Refresh current page silently
@@ -707,13 +796,14 @@ async function silentSync(){
 
 // ── DATA LOADING ──
 async function loadAll(){
-  const [attR,expR,msgR,batR,salR,payStR]=await Promise.all([
+  const [attR,expR,msgR,batR,salR,payStR,attReqR]=await Promise.all([
     SB.from('attendance').select('*').eq('employee_id',emp.id).order('date',{ascending:false}),
     SB.from('expenses').select('*').eq('employee_id',emp.id).order('date',{ascending:false}),
     SB.from('messages').select('*').eq('employee_id',emp.id).order('created_at'),
     SB.from('expense_batches').select('*').eq('employee_id',emp.id).order('submitted_at',{ascending:false}),
     SB.from('salary_history').select('*').eq('employee_id',emp.id).order('effective_from',{ascending:false}),
-    SB.from('payment_status').select('*').eq('employee_id',emp.id)
+    SB.from('payment_status').select('*').eq('employee_id',emp.id),
+    SB.from('attendance_requests').select('*').eq('employee_id',emp.id).order('date',{ascending:false})
   ]);
   myAtt=attR.data||[];
   myExp=expR.data||[];
@@ -721,6 +811,7 @@ async function loadAll(){
   myBatches=batR.error?[]:batR.data||[];
   mySalHist=salR.error?[]:salR.data||[];
   myPaySt=payStR.error?[]:payStR.data||[];
+  myAttReqs=attReqR.error?[]:attReqR.data||[];
   buildNotifications();
   updateBadges();
 }
@@ -762,6 +853,22 @@ function startRealtime(){
       buildNotifications();updateBadges();
       const n=payload.new;
       if(n.bank_paid||n.cash_paid)showPopupNotif(`💰 ${n.bank_paid?'Bank transfer':''} ${n.cash_paid?'Cash payment':''} confirmed ✓`,'payment');
+    })
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'attendance_requests',filter:`employee_id=eq.${emp.id}`},payload=>{
+      const idx=myAttReqs.findIndex(r=>r.id===payload.new.id);
+      if(idx>=0)myAttReqs[idx]=payload.new;else myAttReqs.push(payload.new);
+      const st=payload.new.status;
+      // If approved: update local attendance too
+      if(st==='approved'){
+        const attIdx=myAtt.findIndex(a=>a.date===payload.new.date&&a.employee_id===emp.id);
+        if(attIdx>=0){myAtt[attIdx].sign_in=payload.new.sign_in;myAtt[attIdx].sign_out=payload.new.sign_out;myAtt[attIdx].hours=payload.new.hours;}
+      }
+      const msg=st==='approved'?`✅ Attendance request approved for ${payload.new.date}`
+               :st==='rejected'?`❌ Attendance request rejected — ${payload.new.office_note||'see office'}`
+               :'📋 Attendance request updated';
+      showPopupNotif(msg,'att-req');
+      buildNotifications();
+      if(document.getElementById('pg-att').classList.contains('on'))renderAtt();
     })
     .subscribe();
 }
@@ -842,7 +949,7 @@ function showPg(id){
   document.getElementById('nb-'+id).classList.add('on');
   document.getElementById('notifPanel').classList.remove('open');
   if(id==='home')renderHome();
-  else if(id==='att')renderAtt();
+  else if(id==='att'){renderAtt();buildTodayMarkSection();}
   else if(id==='exp')renderExpenses();
   else if(id==='pay')renderPay();
   else if(id==='msg')renderMsgs();
@@ -1121,6 +1228,31 @@ function renderAtt(){
     </div>`;
   }
   document.getElementById('attRecords').innerHTML=html||'<div class="empty-s"><i class="fa-solid fa-calendar-xmark"></i><p>No records for this month</p></div>';
+
+  // Show my requests for this month
+  const mReqs=myAttReqs.filter(r=>{const d=new Date(r.date+'T00:00:00');return d.getMonth()===m&&d.getFullYear()===y;});
+  const reqEl=document.getElementById('myAttReqsList');
+  if(reqEl){
+    reqEl.innerHTML=mReqs.length?mReqs.map(req=>{
+      const isPending=req.status==='pending';const isApproved=req.status==='approved';const isRejected=req.status==='rejected';
+      const dt2=new Date(req.date+'T00:00:00');
+      return`<div style="background:var(--card);border:1px solid var(--bdr);border-radius:14px;padding:13px 15px;margin-bottom:10px;box-shadow:var(--sh);">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+          <div><div style="font-size:13px;font-weight:700;">${dt2.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}</div>
+          <div style="font-size:12px;color:var(--txtm);">${req.sign_in} – ${req.sign_out} · ${req.hours}h</div></div>
+          <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:${isPending?'var(--ambl)':isApproved?'var(--grnl)':'var(--redl)'};color:${isPending?'var(--amb)':isApproved?'var(--grn)':'var(--red)'};">
+            <i class="fa-solid fa-${isPending?'clock':isApproved?'circle-check':'circle-xmark'}" style="margin-right:3px;"></i>${isPending?'Pending':isApproved?'Approved':'Rejected'}
+          </span>
+        </div>
+        ${req.employee_note?`<div style="font-size:12px;color:var(--txt2);margin-bottom:5px;">Your note: ${req.employee_note}</div>`:''}
+        ${isApproved?`<div style="font-size:12px;color:var(--grn);font-weight:600;"><i class="fa-solid fa-circle-check" style="margin-right:4px;"></i>Office approved — attendance updated</div>`:''}
+        ${isRejected&&req.office_note?`<div style="font-size:12px;color:var(--red);"><i class="fa-solid fa-circle-xmark" style="margin-right:4px;"></i>Office note: ${req.office_note}</div>`:''}
+      </div>`;
+    }).join(''):'<div class="empty-s" style="padding:14px;"><i class="fa-solid fa-inbox"></i><p>No requests this month</p></div>';
+  }
+
+  // Build today section
+  if(m===new Date().getMonth()&&y===new Date().getFullYear())buildTodayMarkSection();
 }
 
 // ── EXPENSES ──
@@ -1358,6 +1490,187 @@ async function sendMsg(){
   if(r.error){toast(r.error.message,'e');return;}
   myMsgs.push(r.data);document.getElementById('msgInput').value='';renderMsgs();
 }
+
+
+// ═══════════════════════════════════════════════════
+// MARK ATTENDANCE REQUEST
+// ═══════════════════════════════════════════════════
+let markSt={h:'09',m:'00'},markEn={h:'17',m:'00'};
+const STD_START='09:00', STD_END='17:00', STD_HOURS=8;
+
+function buildTodayMarkSection(){
+  const today=dk(new Date());
+  const todayRec=myAtt.find(a=>a.date===today);
+  const todayReq=myAttReqs.find(r=>r.date===today);
+  const el=document.getElementById('todayMarkSection');
+  if(!el)return;
+
+  if(todayRec){
+    // Already marked by office
+    const st=todayRec.status;
+    const statusColors={P:'var(--grn)',A:'var(--red)',L:'var(--blu)',S:'var(--pur)',HD:'var(--amb)',LA:'var(--amb)',H:'var(--blu)',UL:'var(--txtm)'};
+    el.innerHTML=`<div style="background:var(--grnl);border:1px solid rgba(22,163,74,0.2);border-radius:14px;padding:13px 15px;margin-bottom:12px;display:flex;align-items:center;gap:11px;">
+      <i class="fa-solid fa-circle-check" style="color:var(--grn);font-size:20px;flex-shrink:0;"></i>
+      <div style="flex:1;"><div style="font-size:13px;font-weight:700;color:var(--grn);">Today marked by office</div>
+      <div style="font-size:12px;color:var(--txt2);">${todayRec.sign_in||'—'} – ${todayRec.sign_out||'—'} · ${todayRec.hours||'?'}h · <span style="color:${statusColors[st]||'var(--txt2)'};">${STATUSES[st]||st}</span></div></div>
+      <button onclick="openMarkModal('${today}',true)" style="background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;color:var(--txt2);"><i class="fa-solid fa-pen" style="margin-right:4px;"></i>Edit</button>
+    </div>`;
+  } else if(todayReq){
+    // Has a pending/rejected request
+    const isPending=todayReq.status==='pending';
+    const isRejected=todayReq.status==='rejected';
+    el.innerHTML=`<div style="background:${isPending?'var(--ambl)':'var(--redl)'};border:1px solid ${isPending?'rgba(217,119,6,0.2)':'rgba(220,38,38,0.2)'};border-radius:14px;padding:13px 15px;margin-bottom:12px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <i class="fa-solid fa-${isPending?'clock':'circle-xmark'}" style="color:${isPending?'var(--amb)':'var(--red)'};font-size:18px;flex-shrink:0;"></i>
+        <div style="flex:1;"><div style="font-size:13px;font-weight:700;color:${isPending?'var(--amb)':'var(--red)'};">${isPending?'Request sent — awaiting approval':'Request rejected'}</div>
+        <div style="font-size:12px;color:var(--txt2);">${todayReq.sign_in} – ${todayReq.sign_out} · ${todayReq.hours}h</div>
+        ${isRejected&&todayReq.office_note?`<div style="font-size:11px;color:var(--red);margin-top:3px;">Office note: ${todayReq.office_note}</div>`:''}</div>
+        ${isRejected?`<button onclick="openMarkModal('${today}')" style="background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;"><i class="fa-solid fa-rotate-left" style="margin-right:4px;"></i>Resend</button>`:''}
+      </div>
+    </div>`;
+  } else {
+    // No record and no request - show mark button
+    const isSunday=new Date().getDay()===0;
+    el.innerHTML=`<button onclick="openMarkModal('${today}')" style="width:100%;background:linear-gradient(135deg,var(--acc),#1d4ed8);color:#fff;border:none;border-radius:14px;padding:14px 18px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;box-shadow:0 4px 14px rgba(37,99,235,0.35);margin-bottom:12px;font-family:inherit;">
+      <i class="fa-solid fa-hand-pointer"></i>Mark Today's Attendance${isSunday?' (Sunday)':''}
+    </button>`;
+  }
+}
+
+function openMarkModal(date,isEdit=false){
+  const req=myAttReqs.find(r=>r.date===date);
+  const rec=myAtt.find(a=>a.date===date);
+  // Pre-fill from existing request or record
+  const preStart=(req?.sign_in||rec?.sign_in||STD_START).substring(0,5);
+  const preEnd=(req?.sign_out||rec?.sign_out||STD_END).substring(0,5);
+  markSt={h:preStart.split(':')[0],m:preStart.split(':')[1]||'00'};
+  markEn={h:preEnd.split(':')[0],m:preEnd.split(':')[1]||'00'};
+
+  // Build title
+  const dt=new Date(date+'T00:00:00');
+  document.getElementById('markModalTitle').textContent=isEdit?'Edit Attendance Request':'Mark Attendance';
+  document.getElementById('markModalDate').textContent=dt.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
+  document.getElementById('markNote').value=req?.employee_note||rec?.notes||'';
+
+  buildHourPicker('startHourPicker','start',6,22);
+  buildHourPicker('endHourPicker','end',6,22);
+  updateMarkPreview();
+
+  const modal=document.getElementById('markModal');
+  modal.style.display='flex';
+  modal.dataset.date=date;
+  modal.dataset.edit=isEdit?'1':'0';
+}
+
+function buildHourPicker(containerId,type,from,to){
+  const container=document.getElementById(containerId);
+  container.innerHTML='';
+  const sel=type==='start'?markSt.h:markEn.h;
+  for(let h=from;h<=to;h++){
+    const hStr=String(h).padStart(2,'0');
+    const btn=document.createElement('div');btn.className='hr-btn'+(hStr===sel?' sel':'');
+    btn.textContent=hStr;
+    btn.onclick=()=>{if(type==='start')markSt.h=hStr;else markEn.h=hStr;buildHourPicker(containerId,type,from,to);updateMarkPreview();};
+    container.appendChild(btn);
+  }
+}
+
+function selMin(type,val){
+  if(type==='start')markSt.m=val;else markEn.m=val;
+  document.querySelectorAll(`#${type}MinPicker .min-btn`).forEach(b=>{b.classList.toggle('sel',b.dataset.v===val);});
+  updateMarkPreview();
+}
+
+function updateMarkPreview(){
+  // Set selected state on min buttons
+  ['start','end'].forEach(type=>{
+    const val=type==='start'?markSt.m:markEn.m;
+    document.querySelectorAll(`#${type}MinPicker .min-btn`).forEach(b=>{b.classList.toggle('sel',b.dataset.v===val);});
+  });
+  const startStr=`${markSt.h}:${markSt.m}`;
+  const endStr=`${markEn.h}:${markEn.m}`;
+  const startMins=parseInt(markSt.h)*60+parseInt(markSt.m);
+  const endMins=parseInt(markEn.h)*60+parseInt(markEn.m);
+  const hours=(endMins-startMins)/60;
+
+  document.getElementById('startPreview').textContent=startStr;
+  document.getElementById('endPreview').textContent=endStr;
+
+  const prev=document.getElementById('markCalcPreview');
+  const hoursDisp=document.getElementById('calcHoursDisp');
+  const statusDisp=document.getElementById('calcStatusDisp');
+
+  if(hours<=0){prev.style.display='none';return;}
+  prev.style.display='block';
+  hoursDisp.textContent=hours.toFixed(1)+'h';
+
+  const stdStartMins=9*60,stdEndMins=17*60;
+  const lateBy=startMins-stdStartMins;
+  const earlyBy=stdEndMins-endMins;
+  const deducted=Math.max(0,STD_HOURS-hours);
+
+  if(lateBy>15&&earlyBy>15){
+    prev.style.background='var(--redl)';hoursDisp.style.color='var(--red)';
+    statusDisp.innerHTML=`<span style="color:var(--red);">Started ${fmtMins(lateBy)} late · Left ${fmtMins(earlyBy)} early · -${deducted.toFixed(1)}h deducted</span>`;
+  } else if(lateBy>15){
+    prev.style.background='var(--ambl)';hoursDisp.style.color='var(--amb)';
+    statusDisp.innerHTML=`<span style="color:var(--amb);">Started ${fmtMins(lateBy)} late · -${deducted.toFixed(1)}h deducted</span>`;
+  } else if(earlyBy>15){
+    prev.style.background='var(--ambl)';hoursDisp.style.color='var(--amb)';
+    statusDisp.innerHTML=`<span style="color:var(--amb);">Left ${fmtMins(earlyBy)} early · -${deducted.toFixed(1)}h deducted</span>`;
+  } else if(hours>STD_HOURS){
+    prev.style.background='var(--grnl)';hoursDisp.style.color='var(--grn)';
+    const extra=hours-STD_HOURS;
+    statusDisp.innerHTML=`<span style="color:var(--grn);">On time ✓ · +${extra.toFixed(1)}h extra</span>`;
+  } else {
+    prev.style.background='var(--grnl)';hoursDisp.style.color='var(--grn)';
+    statusDisp.innerHTML=`<span style="color:var(--grn);">On time ✓</span>`;
+  }
+}
+
+function fmtMins(m){if(m>=60)return Math.floor(m/60)+'h '+(m%60?m%60+'m':'');return m+'m';}
+
+function closeMarkModal(){
+  const modal=document.getElementById('markModal');
+  modal.style.display='none';
+}
+
+async function submitAttRequest(){
+  const modal=document.getElementById('markModal');
+  const date=modal.dataset.date;
+  const startStr=`${markSt.h}:${markSt.m}`;
+  const endStr=`${markEn.h}:${markEn.m}`;
+  const startMins=parseInt(markSt.h)*60+parseInt(markSt.m);
+  const endMins=parseInt(markEn.h)*60+parseInt(markEn.m);
+  const hours=parseFloat(((endMins-startMins)/60).toFixed(1));
+  if(hours<=0){toast('Please pick valid start and end times','e');return;}
+  const stdStart=9*60,stdEnd=17*60;
+  const lateBy=startMins-stdStart;
+  const earlyBy=stdEnd-endMins;
+  let status_note='on_time';
+  if(lateBy>15&&earlyBy>15)status_note='late_and_early';
+  else if(lateBy>15)status_note='started_late';
+  else if(earlyBy>15)status_note='left_early';
+  const note=document.getElementById('markNote').value.trim();
+
+  // Check existing request for this date
+  const existing=myAttReqs.find(r=>r.date===date);
+  let r;
+  if(existing){
+    r=await SB.from('attendance_requests').update({sign_in:startStr,sign_out:endStr,hours,employee_note:note,status:'pending',office_note:null,reviewed_at:null}).eq('id',existing.id).select().single();
+    if(!r.error){const idx=myAttReqs.findIndex(x=>x.id===existing.id);if(idx>=0)myAttReqs[idx]=r.data;}
+  } else {
+    r=await SB.from('attendance_requests').insert({employee_id:emp.id,date,sign_in:startStr,sign_out:endStr,hours,employee_note:note,status:'pending'}).select().single();
+    if(!r.error)myAttReqs.unshift(r.data);
+  }
+  if(r.error){toast('Could not send request: '+r.error.message,'e');return;}
+  closeMarkModal();
+  toast('Attendance request sent ✓','s');
+  renderAtt();
+  // Also show on home
+  buildTodayMarkSection();
+}
+
 
 // ── SUNDAY MODE ──
 function checkSundayMode(){
