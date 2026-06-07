@@ -188,6 +188,77 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .msg-input:focus{border-color:var(--acc);}
 .send-btn{width:44px;height:44px;border-radius:50%;background:var(--acc);color:#fff;border:none;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;}
 
+/* ── BEAUTIFUL MICRO-DETAILS ── */
+
+/* Glassmorphism cards */
+.glass-card{background:rgba(255,255,255,0.7);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.5);border-radius:var(--r);box-shadow:0 4px 24px rgba(0,0,0,0.06);}
+[data-theme=dark] .glass-card{background:rgba(30,41,59,0.7);border-color:rgba(255,255,255,0.08);}
+
+/* Gradient stat boxes */
+.stat-box-g{border-radius:var(--r);padding:16px;text-align:center;position:relative;overflow:hidden;}
+.stat-box-g::after{content:'';position:absolute;bottom:-15px;right:-10px;width:60px;height:60px;border-radius:50%;opacity:0.15;}
+
+/* Floating action feel */
+.btn-p{background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;box-shadow:0 4px 14px rgba(37,99,235,0.35);}
+.btn-p:active{transform:scale(0.97);box-shadow:0 2px 8px rgba(37,99,235,0.25);}
+.btn-s{background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;box-shadow:0 4px 14px rgba(22,163,74,0.3);}
+
+/* Smooth card hover on desktop */
+.card{transition:box-shadow 0.2s;}
+
+/* Beautiful salary card glow */
+.sal-card{box-shadow:0 8px 32px rgba(37,99,235,0.25),inset 0 1px 0 rgba(255,255,255,0.1);}
+
+/* Attendance box micro-animation */
+.att-box{transition:transform 0.15s,box-shadow 0.15s;}
+.att-box:active{transform:scale(0.88);}
+.att-box.today{box-shadow:0 0 0 2px var(--acc),0 0 8px rgba(37,99,235,0.4);}
+
+/* Nav active indicator */
+.nb.on::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:18px;height:3px;background:var(--acc);border-radius:3px 3px 0 0;}
+
+/* Smooth page transitions */
+.pg{animation:none;}
+.pg.on{animation:fadeUp 0.25s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+/* Message bubble polish */
+.bubble.me{background:linear-gradient(135deg,#2563eb,#1d4ed8);box-shadow:0 2px 8px rgba(37,99,235,0.25);}
+.bubble.them{box-shadow:0 1px 4px rgba(0,0,0,0.06);}
+
+/* Receipt zone polish */
+.receipt-zone{position:relative;overflow:hidden;}
+.receipt-zone::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(37,99,235,0.02),transparent);}
+
+/* Beautiful empty states */
+.empty-s i{background:linear-gradient(135deg,var(--accl),var(--purl));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+
+/* Shimmer loading effect */
+@keyframes shimmer{0%{background-position:-200px 0;}100%{background-position:200px 0;}}
+.loading-shimmer{background:linear-gradient(90deg,var(--card2) 25%,var(--bdr) 50%,var(--card2) 75%);background-size:400px 100%;animation:shimmer 1.5s infinite;}
+
+/* Pill tags */
+.pill-tag{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+
+/* Bottom nav glass effect */
+.bot-nav{backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);background:rgba(255,255,255,0.92);}
+[data-theme=dark] .bot-nav{background:rgba(30,41,59,0.92);}
+
+/* Pull to refresh indicator */
+.pull-tag{font-size:11px;color:var(--txtm);padding:6px;text-align:center;transition:all 0.3s;}
+
+/* Expense icon colours */
+.exp-icon-travel{background:#eff6ff;color:#2563eb;}
+.exp-icon-meals{background:#ecfdf5;color:#16a34a;}
+.exp-icon-fuel{background:#fffbeb;color:#d97706;}
+.exp-icon-equipment{background:#f5f3ff;color:#7c3aed;}
+.exp-icon-other{background:#f8fafc;color:#64748b;}
+
+/* Notification slide in */
+.notif-panel{transition:transform 0.3s ease,opacity 0.3s ease;}
+.notif-panel:not(.open){transform:translateY(-10px);opacity:0;pointer-events:none;display:block!important;}
+.notif-panel.open{transform:translateY(0);opacity:1;}
+
 /* ── MISC ── */
 .month-tabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:12px;padding-bottom:2px;-webkit-overflow-scrolling:touch;}
 .month-tabs::-webkit-scrollbar{height:2px;}
@@ -251,18 +322,36 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 
 <!-- APP -->
 <div id="app">
-  <!-- TOPBAR -->
+  <!-- TOPBAR - Beautiful hero header -->
   <div class="topbar">
-    <div class="tb-left">
-      <div class="tb-av" id="tbAv">?</div>
-      <div><div class="tb-name" id="tbName">Loading...</div><div class="tb-role" id="tbRole"></div></div>
+    <div class="topbar-bg"></div>
+    <div class="topbar-blob1"></div>
+    <div class="topbar-blob2"></div>
+    <div class="topbar-blob3"></div>
+    <div class="topbar-inner">
+      <div class="tb-left">
+        <div class="tb-av" id="tbAv">?</div>
+        <div>
+          <div class="tb-name" id="tbName">Loading...</div>
+          <div class="tb-role" id="tbRole">Employee Portal</div>
+        </div>
+      </div>
+      <div class="tb-right">
+        <button class="tb-btn" id="notifBtn" onclick="toggleNotifPanel()" title="Notifications">
+          <i class="fa-solid fa-bell"></i>
+          <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
+        </button>
+        <button class="tb-btn" onclick="toggleTheme()" title="Toggle theme">
+          <i class="fa-solid fa-circle-half-stroke"></i>
+        </button>
+        <button class="tb-btn" onclick="doLogout()" title="Sign out">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </button>
+      </div>
     </div>
-    <div class="tb-right">
-      <button class="tb-notif" id="notifBtn" onclick="toggleNotifPanel()">
-        <i class="fa-solid fa-bell"></i>
-        <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
-      </button>
-      <button class="tb-theme" onclick="toggleTheme()"><i class="fa-solid fa-circle-half-stroke"></i></button>
+    <div class="sync-strip" id="syncStrip">
+      <div class="sync-dot" id="syncDot"></div>
+      <span class="sync-txt" id="syncTxt">Live · syncing automatically</span>
     </div>
   </div>
 
@@ -449,7 +538,7 @@ function toggleTheme(){const h=document.documentElement;h.dataset.theme=h.datase
 
 // ── AUTH ──
 async function initAuth(){
-  const r=await SB.from('employees').select('id,name,role,status,pin,pay_type,hourly_rate,salary,daily_rate,contracted_hours,ot_type,ot_mult,ot_flat,sat_mult,sun_mult,bank_amt,bank_name').eq('status','Active').order('name');
+  const r=await SB.from('employees').select('*').eq('status','Active').order('name');
   if(r.error){document.getElementById('empList').innerHTML='<div style="color:#fca5a5;text-align:center;padding:14px;">Could not connect. Check your internet.</div>';return;}
   allEmps=r.data||[];
   const cfgR=await SB.from('settings').select('*').eq('id',1).single();
@@ -487,6 +576,9 @@ async function checkPin(){
 }
 async function enterApp(e){
   emp=e;
+  // Persist session for 7 days
+  localStorage.setItem('dam_emp_id',e.id);
+  localStorage.setItem('dam_emp_ts',Date.now());
   document.getElementById('auth').style.display='none';
   document.getElementById('app').style.display='flex';
   document.getElementById('tbAv').textContent=ini(e.name);
@@ -499,8 +591,12 @@ async function enterApp(e){
   populateCats();
   renderHome();
   startRealtime();
+  // Start periodic sync every 60s
+  setInterval(silentSync, 60000);
 }
 function doLogout(){
+  localStorage.removeItem('dam_emp_id');
+  localStorage.removeItem('dam_emp_ts');
   if(realtimeChannel)SB.removeChannel(realtimeChannel);
   emp=null;myAtt=[];myExp=[];myMsgs=[];myBatches=[];mySalHist=[];myPaySt=[];notifications=[];
   document.getElementById('app').style.display='none';
@@ -508,6 +604,41 @@ function doLogout(){
   document.getElementById('step2').style.display='none';
   document.getElementById('step1').style.display='block';
   pinEntry='';selEmpId='';renderPinDots();
+}
+
+function setSyncUI(state){
+  const strip=document.getElementById('syncStrip');
+  const dot=document.getElementById('syncDot');
+  const txt=document.getElementById('syncTxt');
+  if(!strip)return;
+  strip.className='sync-strip'+{syncing:' syncing',err:' err','':''}[state]||'';
+  if(dot)dot.id='syncDot';
+  if(txt)txt.textContent={syncing:'Syncing...',err:'Sync error · will retry',live:'Live · syncing automatically'}[state]||'Live · syncing automatically';
+  if(state==='live')setTimeout(()=>setSyncUI(''),3000);
+}
+
+async function silentSync(){
+  if(!emp)return;
+  setSyncUI('syncing');
+  const [attR,expR,msgR,batR,payStR]=await Promise.all([
+    SB.from('attendance').select('*').eq('employee_id',emp.id).order('date',{ascending:false}),
+    SB.from('expenses').select('*').eq('employee_id',emp.id).order('date',{ascending:false}),
+    SB.from('messages').select('*').eq('employee_id',emp.id).order('created_at'),
+    SB.from('expense_batches').select('*').eq('employee_id',emp.id).order('submitted_at',{ascending:false}),
+    SB.from('payment_status').select('*').eq('employee_id',emp.id)
+  ]);
+  const hadNewMsg=myMsgs.length<(msgR.data||[]).length;
+  myAtt=attR.data||[];myExp=expR.data||[];myMsgs=msgR.data||[];
+  myBatches=batR.error?myBatches:batR.data||[];
+  myPaySt=payStR.error?myPaySt:payStR.data||[];
+  buildNotifications();updateBadges();
+  setSyncUI('live');
+  // Refresh current page silently
+  const cur=document.querySelector('.pg.on')?.id?.replace('pg-','');
+  if(cur==='home')renderHome();
+  else if(cur==='pay')renderPay();
+  else if(cur==='exp')renderExpenses();
+  else if(cur==='msg'&&hadNewMsg)renderMsgs();
 }
 
 // ── DATA LOADING ──
@@ -701,9 +832,19 @@ function renderHome(){
   } else pmEl.innerHTML='';
 
   // Stats
+  const attColor=pct>=80?'var(--grn)':pct>=60?'var(--amb)':'var(--red)';
   document.getElementById('hmStats').innerHTML=`
-    <div class="stat-box"><div class="stat-l">Attendance</div><div class="stat-v" style="color:${pct>=80?'var(--grn)':pct>=60?'var(--amb)':'var(--red)'};">${pct}%</div><div class="stat-s">${pres} of ${wD} days</div><div class="pbar"><div class="pbar-f" style="background:${pct>=80?'var(--grn)':pct>=60?'var(--amb)':'var(--red)'};width:${pct}%;"></div></div></div>
-    <div class="stat-box"><div class="stat-l">Hours Worked</div><div class="stat-v">${hrs.toFixed(0)}</div><div class="stat-s">OT: ${otHrs.toFixed(1)}h</div></div>`;
+    <div class="stat-box" style="background:linear-gradient(135deg,${pct>=80?'#f0fdf4,#dcfce7':pct>=60?'#fffbeb,#fef3c7':'#fef2f2,#fee2e2'});">
+      <div class="stat-l" style="color:${attColor};">Attendance</div>
+      <div class="stat-v" style="color:${attColor};font-size:26px;">${pct}%</div>
+      <div class="stat-s">${pres} of ${wD} days</div>
+      <div class="pbar" style="margin-top:7px;"><div class="pbar-f" style="background:${attColor};width:${pct}%;"></div></div>
+    </div>
+    <div class="stat-box" style="background:linear-gradient(135deg,#eff6ff,#dbeafe);">
+      <div class="stat-l" style="color:#2563eb;">Hours</div>
+      <div class="stat-v" style="color:#2563eb;font-size:26px;">${hrs.toFixed(0)}</div>
+      <div class="stat-s">${otHrs>0?'OT: '+otHrs.toFixed(1)+'h · ':''}this month</div>
+    </div>`;
 
   // Attendance strip
   const strip=document.getElementById('hmStrip');strip.innerHTML='';
@@ -982,7 +1123,24 @@ async function sendMsg(){
 }
 
 // ── INIT ──
-initAuth();
+async function tryAutoLogin(){
+  const savedId=localStorage.getItem('dam_emp_id');
+  const savedTs=parseInt(localStorage.getItem('dam_emp_ts')||'0');
+  const sevenDays=7*24*60*60*1000;
+  if(savedId&&Date.now()-savedTs<sevenDays){
+    // Load employees first
+    const r=await SB.from('employees').select('*').eq('id',savedId).single();
+    const cfgR=await SB.from('settings').select('*').eq('id',1).single();
+    if(cfgR.data)cfg=cfgR.data;
+    if(!r.error&&r.data&&r.data.status==='Active'){
+      allEmps=[r.data];
+      await enterApp(r.data);
+      return;
+    }
+  }
+  initAuth();
+}
+tryAutoLogin();
 </script>
 </body>
 </html>
