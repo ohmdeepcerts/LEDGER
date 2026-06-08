@@ -24,7 +24,7 @@
   --bg:#0f172a;--card:#1e293b;--card2:#162032;--txt:#f1f5f9;--txt2:#94a3b8;--txtm:#475569;
   --bdr:#2d3f55;--accl:#1e3a5f;--grnl:#14532d;--redl:#7f1d1d;--ambl:#78350f;--purl:#3b0764;
 }
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
 html,body{height:100%;overflow:hidden;}
 body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--txt);max-width:430px;margin:0 auto;position:relative;display:flex;flex-direction:column;transition:background 0.8s ease;}
 body.sunday-beach{background:linear-gradient(180deg,#e0f7ff 0%,#f0f9ff 30%,#f1f5f9 100%);}
@@ -73,20 +73,7 @@ body.sunday-active{background:linear-gradient(180deg,#d1fae5 0%,#f0fdf4 30%,#f1f
 .notif-badge{position:absolute;top:-2px;right:-2px;background:#ef4444;color:#fff;font-size:9px;font-weight:800;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #1e3a5f;}
 .tb-theme{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;border:none;color:#fff;}
 
-/* ── NOTIFICATION PANEL ── */
-.notif-panel{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:var(--card);border-bottom:1px solid var(--bdr);box-shadow:var(--shm);z-index:500;max-height:70vh;overflow-y:auto;display:none;}
-.notif-panel.open{display:block;}
-.notif-header{padding:14px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--bdr);background:var(--card2);}
-.notif-title{font-size:15px;font-weight:700;}
-.notif-close{background:none;border:none;color:var(--txtm);font-size:18px;cursor:pointer;}
-.notif-item{padding:12px 16px;border-bottom:0.5px solid var(--bdr);display:flex;gap:11px;align-items:flex-start;cursor:pointer;transition:var(--tr);}
-.notif-item:active{background:var(--card2);}
-.notif-item.unread{background:linear-gradient(90deg,rgba(37,99,235,0.05),transparent);}
-.ni-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
-.ni-body{flex:1;}
-.ni-title{font-size:13px;font-weight:600;margin-bottom:2px;}
-.ni-sub{font-size:12px;color:var(--txtm);}
-.ni-time{font-size:11px;color:var(--txtm);white-space:nowrap;flex-shrink:0;}
+/* notification panel removed */
 
 /* ── CONTENT AREA ── */
 .content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
@@ -215,6 +202,8 @@ body.sunday-active{background:linear-gradient(180deg,#d1fae5 0%,#f0fdf4 30%,#f1f
 
 /* Floating action feel */
 .btn-p{background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;box-shadow:0 4px 14px rgba(37,99,235,0.35);}
+.mark-today-btn{width:100%;background:linear-gradient(135deg,#1d4ed8,#2563eb,#3b82f6);color:#fff;border:none;border-radius:14px;padding:16px 18px;font-size:16px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px;font-family:inherit;letter-spacing:-0.3px;animation:markPulse 2.5s ease-in-out infinite;}
+@keyframes markPulse{0%,100%{box-shadow:0 6px 20px rgba(37,99,235,0.4);}50%{box-shadow:0 6px 28px rgba(37,99,235,0.65),0 0 0 8px rgba(37,99,235,0.1);}}
 .btn-p:active{transform:scale(0.97);box-shadow:0 2px 8px rgba(37,99,235,0.25);}
 .btn-s{background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;box-shadow:0 4px 14px rgba(22,163,74,0.3);}
 
@@ -378,71 +367,69 @@ body.sunday-active{background:linear-gradient(180deg,#d1fae5 0%,#f0fdf4 30%,#f1f
 <div id="app">
   <!-- TOPBAR - Beautiful hero header -->
   <div class="topbar">
-    <div class="topbar-bg"></div>
-    <div class="topbar-blob1"></div>
-    <div class="topbar-blob2"></div>
-    <!-- ROW 1: pill LEFT, buttons RIGHT — no flex tricks -->
-    <div style="position:relative;z-index:1;display:flex;flex-direction:row;align-items:center;padding:12px 14px 8px;width:100%;box-sizing:border-box;">
-      <!-- LEFT: identity pill -->
-      <div class="id-pill" onclick="togglePillMenu()" id="idPill">
-        <div class="tb-av" id="tbAv">?</div>
-        <div class="id-info">
-          <div class="tb-name" id="tbName">—</div>
-          <div class="tb-role" id="tbRole">Employee Portal</div>
+    <!-- Gradient background layers -->
+    <div style="position:absolute;inset:0;background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 55%,#2563eb 100%);z-index:0;"></div>
+    <div style="position:absolute;top:-40px;right:-30px;width:160px;height:160px;background:rgba(99,102,241,0.15);border-radius:50%;z-index:0;"></div>
+    <div style="position:absolute;bottom:-50px;left:-20px;width:130px;height:130px;background:rgba(37,99,235,0.1);border-radius:50%;z-index:0;"></div>
+
+    <!-- MAIN ROW -->
+    <div style="position:relative;z-index:1;display:flex;align-items:center;gap:10px;padding:14px 14px 10px;">
+      <!-- Identity pill — tappable, opens menu -->
+      <div id="idPill" onclick="togglePillMenu()" style="display:inline-flex;align-items:center;gap:9px;background:rgba(255,255,255,0.12);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.2);border-radius:40px;padding:7px 13px 7px 7px;cursor:pointer;transition:all 0.2s;flex-shrink:1;min-width:0;max-width:62%;" onmouseover="this.style.background='rgba(255,255,255,0.18)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'">
+        <div id="tbAv" style="width:36px;height:36px;border-radius:50%;background:#2563eb;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex-shrink:0;border:2px solid rgba(255,255,255,0.3);">?</div>
+        <div style="min-width:0;">
+          <div id="tbName" style="font-size:14px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;">Loading...</div>
+          <div id="tbRole" style="font-size:10px;color:rgba(255,255,255,0.55);margin-top:1px;">Employee Portal</div>
         </div>
-        <i class="fa-solid fa-chevron-down" style="font-size:10px;opacity:0.5;margin-left:6px;flex-shrink:0;"></i>
+        <i class="fa-solid fa-chevron-down" style="font-size:9px;color:rgba(255,255,255,0.45);flex-shrink:0;margin-left:2px;"></i>
       </div>
-      <!-- RIGHT: action buttons — margin-left:auto pushes to right -->
-      <div style="margin-left:auto;display:flex;gap:8px;flex-shrink:0;">
-        <button class="tb-btn" id="notifBtn" onclick="toggleNotifPanel()">
-          <i class="fa-solid fa-bell"></i>
-          <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
-        </button>
-        <button class="tb-btn" onclick="toggleTheme()">
+
+      <!-- RIGHT BUTTONS -->
+      <div style="margin-left:auto;display:flex;align-items:center;gap:7px;flex-shrink:0;">
+
+        <!-- Theme -->
+        <button onclick="toggleTheme()" style="width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;transition:all 0.18s;" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
           <i class="fa-solid fa-circle-half-stroke"></i>
         </button>
       </div>
     </div>
-    <!-- Pill dropdown (absolute, doesn't affect layout) -->
-    <div class="pill-menu" id="pillMenu" style="display:none;position:absolute;top:68px;left:14px;z-index:300;">
-      <div class="pill-menu-item" onclick="toggleNotifPanel()"><i class="fa-solid fa-bell"></i>Notifications</div>
-      <div class="pill-menu-item" onclick="toggleTheme()"><i class="fa-solid fa-circle-half-stroke"></i>Toggle Theme</div>
-      <div class="pill-menu-item logout" onclick="doLogout()"><i class="fa-solid fa-right-from-bracket"></i>Sign Out</div>
-    </div>
-    <!-- ROW 2: sync strip -->
-    <div class="sync-strip live" id="syncStrip" style="position:relative;z-index:1;padding:3px 14px 10px;">
-      <div class="sync-dot"></div>
-      <span class="sync-txt" id="syncTxt">· live</span>
-    </div>
-  </div>
 
-<!-- NOTIFICATION PANEL -->
-  <div class="notif-panel" id="notifPanel">
-    <div class="notif-header">
-      <span class="notif-title">Notifications</span>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <button onclick="markAllNotifsRead()" style="font-size:12px;font-weight:600;color:var(--acc);background:none;border:none;cursor:pointer;">Mark all read</button>
-        <button class="notif-close" onclick="toggleNotifPanel()"><i class="fa-solid fa-xmark"></i></button>
+    <!-- Pill dropdown -->
+    <div id="pillMenu" style="display:none;position:absolute;top:74px;left:14px;z-index:300;background:var(--card);border:1px solid var(--bdr);border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.18);min-width:190px;overflow:hidden;">
+      <div onclick="showPg('home');togglePillMenu()" style="display:flex;align-items:center;gap:10px;padding:12px 16px;font-size:13px;font-weight:600;color:var(--txt);cursor:pointer;border-bottom:0.5px solid var(--bdr);" onmouseover="this.style.background='var(--card2)'" onmouseout="this.style.background=''"><i class="fa-solid fa-house" style="width:16px;color:var(--txtm);"></i>Home</div>
+
+      <div onclick="toggleTheme()" style="display:flex;align-items:center;gap:10px;padding:12px 16px;font-size:13px;font-weight:600;color:var(--txt);cursor:pointer;border-bottom:0.5px solid var(--bdr);" onmouseover="this.style.background='var(--card2)'" onmouseout="this.style.background=''"><i class="fa-solid fa-circle-half-stroke" style="width:16px;color:var(--txtm);"></i>Toggle Theme</div>
+      <div onclick="doLogout()" style="display:flex;align-items:center;gap:10px;padding:12px 16px;font-size:13px;font-weight:600;color:var(--red);cursor:pointer;" onmouseover="this.style.background='var(--redl)'" onmouseout="this.style.background=''"><i class="fa-solid fa-right-from-bracket" style="width:16px;"></i>Sign Out</div>
+    </div>
+
+    <!-- SYNC STRIP — colour pill not boring text -->
+    <div id="syncStrip" style="position:relative;z-index:1;padding:0 14px 12px;display:flex;align-items:center;gap:8px;">
+      <!-- Colour pill with last sync time -->
+      <div id="syncPill" style="display:inline-flex;align-items:center;gap:6px;background:rgba(74,222,128,0.15);border:1px solid rgba(74,222,128,0.35);border-radius:20px;padding:3px 10px 3px 7px;">
+        <div id="syncDot" style="width:7px;height:7px;border-radius:50%;background:#4ade80;flex-shrink:0;animation:livepulse 2.5s ease-in-out infinite;"></div>
+        <span id="syncTxt" style="font-size:10px;font-weight:700;color:#4ade80;letter-spacing:0.02em;">live</span>
+        <span id="syncTime" style="font-size:10px;color:rgba(74,222,128,0.7);font-weight:500;">· --:--</span>
       </div>
     </div>
-    <div id="notifList"><div class="empty-s" style="padding:20px;"><i class="fa-solid fa-bell-slash"></i><p>No notifications</p></div></div>
   </div>
 
-  <!-- CONTENT -->
+<!-- CONTENT -->
   <div class="content">
 
     <!-- HOME -->
     <div class="pg on" id="pg-home">
       <div class="pull-tag">DAM Employee Portal</div>
+      <!-- TODAY MARK SECTION on home -->
+      <div id="homeTodayMark"></div>
       <!-- Salary card -->
       <div class="sal-card" id="hmSalCard">
         <div class="sal-month" id="hmMonth">This Month</div>
         <div class="sal-amount" id="hmAmount">£—</div>
         <div class="sal-sub">Estimated pay · tap Pay tab for details</div>
-        <div class="sal-grid">
+        <div class="sal-grid" id="hmSalGrid">
           <div class="sal-it"><div class="sal-it-l">Base</div><div class="sal-it-v" id="hmBase">—</div></div>
           <div class="sal-it"><div class="sal-it-l">OT</div><div class="sal-it-v" id="hmOT">—</div></div>
-          <div class="sal-it"><div class="sal-it-l">Bonus</div><div class="sal-it-v" id="hmBonus">—</div></div>
+          <div class="sal-it" id="hmBonusWrap" style="display:none;"><div class="sal-it-l">Bonus</div><div class="sal-it-v" id="hmBonus">—</div></div>
           <div class="sal-it"><div class="sal-it-l">Days</div><div class="sal-it-v" id="hmDays">—</div></div>
         </div>
       </div>
@@ -469,9 +456,7 @@ body.sunday-active{background:linear-gradient(180deg,#d1fae5 0%,#f0fdf4 30%,#f1f
         <div class="card-h"><span class="card-t" id="attTitle">Records</span><span class="card-s" id="attSummary"></span></div>
         <div class="card-b" id="attRecords"></div>
       </div>
-      <!-- My requests -->
-      <div class="sec">My Requests</div>
-      <div id="myAttReqsList"></div>
+
     </div>
 
     <!-- MARK ATTENDANCE MODAL -->
@@ -561,12 +546,28 @@ body.sunday-active{background:linear-gradient(180deg,#d1fae5 0%,#f0fdf4 30%,#f1f
           <div class="fg"><label>Amount (£) *</label><input type="number" id="expAmt" placeholder="0.00" step="0.01" min="0" inputmode="decimal"></div>
         </div>
         <div class="fg"><label>Notes</label><textarea id="expNotes" placeholder="Any details..."></textarea></div>
-        <div class="receipt-zone" onclick="document.getElementById('rcptInput').click()">
-          <i class="fa-solid fa-camera"></i>
-          <p><strong>Tap to attach receipt</strong><br><span style="font-size:11px;">Photo or PDF · optional</span></p>
+        <div style="display:flex;align-items:center;gap:11px;background:var(--ambl);border:1px solid rgba(217,119,6,0.2);border-radius:var(--rs);padding:11px 13px;margin-bottom:12px;">
+          <i class="fa-solid fa-tag" style="color:var(--amb);font-size:16px;flex-shrink:0;"></i>
+          <div style="flex:1;"><div style="font-size:13px;font-weight:700;color:var(--amb);">VAT Receipt</div><div style="font-size:11px;color:var(--txt2);">Toggle if this receipt has VAT you want to reclaim</div></div>
+          <label style="position:relative;width:44px;height:24px;flex-shrink:0;">
+            <input type="checkbox" id="expVAT" style="opacity:0;width:0;height:0;">
+            <span id="vatToggleVis" onclick="toggleVATvis()" style="position:absolute;inset:0;background:var(--bdr);border-radius:12px;cursor:pointer;transition:0.2s;"></span>
+          </label>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+          <div class="receipt-zone" style="padding:14px;margin-bottom:0;" onclick="document.getElementById('rcptCamera').click()">
+            <i class="fa-solid fa-camera" style="font-size:22px;"></i>
+            <p style="font-size:12px;margin:0;"><strong>Camera</strong><br><span style="font-size:10px;">Take photo</span></p>
+          </div>
+          <div class="receipt-zone" style="padding:14px;margin-bottom:0;" onclick="document.getElementById('rcptFile').click()">
+            <i class="fa-solid fa-paperclip" style="font-size:22px;"></i>
+            <p style="font-size:12px;margin:0;"><strong>Browse</strong><br><span style="font-size:10px;">PDF or image</span></p>
+          </div>
         </div>
         <img class="receipt-preview" id="rcptPreview">
-        <input type="file" id="rcptInput" accept="image/*,.pdf" capture="environment" style="display:none;" onchange="rcptChosen(this)">
+        <div id="rcptFileName" style="font-size:11px;color:var(--grn);font-weight:600;margin-bottom:8px;display:none;"></div>
+        <input type="file" id="rcptCamera" accept="image/*" capture="environment" style="display:none;" onchange="rcptChosen(this)">
+        <input type="file" id="rcptFile" accept="image/*,.pdf,.jpg,.jpeg,.png" style="display:none;" onchange="rcptChosen(this)">
         <button class="btn btn-p" onclick="submitExp()"><i class="fa-solid fa-paper-plane"></i>Submit Expense</button>
       </div></div>
 
@@ -575,9 +576,7 @@ body.sunday-active{background:linear-gradient(180deg,#d1fae5 0%,#f0fdf4 30%,#f1f
       <div class="month-tabs" id="expTabs"></div>
       <div class="card"><div class="card-b" id="myExp"></div></div>
 
-      <!-- Approval batches -->
-      <div class="sec">Approval Status</div>
-      <div id="myBatches"></div>
+      <!-- No batch submission needed - office approves inline -->
     </div>
 
     <!-- PAY -->
@@ -633,7 +632,6 @@ const STATUSES={P:'Present',A:'Absent',L:'Annual Leave',S:'Sick Leave',H:'Bank H
 // ── STATE ──
 let emp=null, allEmps=[], cfg={};
 let myAtt=[], myExp=[], myMsgs=[], myBatches=[], mySalHist=[], myPaySt=[], myAttReqs=[];
-let notifications=[];
 let pinEntry='', selEmpId='';
 let receiptFile=null;
 let attM=new Date().getMonth(), attY=new Date().getFullYear();
@@ -744,7 +742,7 @@ async function enterApp(e){
   setSyncUI('live');
   checkSundayMode();
   // Start periodic sync every 60s
-  setInterval(silentSync, 60000);
+  setInterval(silentSync, 30000); // sync every 30 seconds
 }
 function doLogout(){
   localStorage.removeItem('dam_emp_id');
@@ -759,13 +757,35 @@ function doLogout(){
 }
 
 function setSyncUI(state){
-  const strip=document.getElementById('syncStrip');
+  const pill=document.getElementById('syncPill');
   const txt=document.getElementById('syncTxt');
-  if(!strip)return;
+  const dot=document.getElementById('syncDot');
+  const timeEl=document.getElementById('syncTime');
+  if(!pill)return;
   const s=state||'live';
-  strip.className='sync-strip '+s;
-  const msgs={live:'· live',syncing:'· syncing...',err:'· sync error — tap to retry',offline:'· offline'};
-  if(txt)txt.textContent=msgs[s]||msgs.live;
+  // Pill colour by state
+  const styles={
+    live:{bg:'rgba(74,222,128,0.15)',border:'rgba(74,222,128,0.35)',col:'#4ade80',dotCol:'#4ade80',anim:'livepulse 2.5s ease-in-out infinite'},
+    syncing:{bg:'rgba(251,191,36,0.15)',border:'rgba(251,191,36,0.35)',col:'#fbbf24',dotCol:'#fbbf24',anim:'none'},
+    err:{bg:'rgba(239,68,68,0.15)',border:'rgba(239,68,68,0.35)',col:'#f87171',dotCol:'#ef4444',anim:'none'},
+    offline:{bg:'rgba(100,116,139,0.15)',border:'rgba(100,116,139,0.35)',col:'#94a3b8',dotCol:'#64748b',anim:'none'}
+  };
+  const st=styles[s]||styles.live;
+  pill.style.background=st.bg;pill.style.borderColor=st.border;
+  if(dot){dot.style.background=st.dotCol;dot.style.animation=st.anim;}
+  const labels={live:'live',syncing:'syncing…',err:'sync error',offline:'offline'};
+  if(txt){txt.textContent=labels[s]||'live';txt.style.color=st.col;}
+  if(timeEl){
+    if(s==='live'||s==='syncing'){
+      const now=new Date();
+      const t=now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+      timeEl.textContent='· '+t;timeEl.style.color=s==='live'?'rgba(74,222,128,0.7)':st.col+'99';
+    } else if(s==='err'){
+      timeEl.textContent='· failed';timeEl.style.color='rgba(239,68,68,0.6)';
+    } else if(s==='offline'){
+      timeEl.textContent='· no internet';timeEl.style.color='rgba(100,116,139,0.6)';
+    }
+  }
 }
 
 async function silentSync(){
@@ -784,7 +804,7 @@ async function silentSync(){
   myBatches=batR.error?myBatches:batR.data||[];
   myPaySt=payStR.error?myPaySt:payStR.data||[];
   myAttReqs=attReqR2.error?myAttReqs:attReqR2.data||[];
-  buildNotifications();updateBadges();
+  updateBadges();updateBadges();
   setSyncUI('live');
   // Refresh current page silently
   const cur=document.querySelector('.pg.on')?.id?.replace('pg-','');
@@ -812,7 +832,7 @@ async function loadAll(){
   mySalHist=salR.error?[]:salR.data||[];
   myPaySt=payStR.error?[]:payStR.data||[];
   myAttReqs=attReqR.error?[]:attReqR.data||[];
-  buildNotifications();
+  updateBadges();
   updateBadges();
 }
 
@@ -821,14 +841,14 @@ function startRealtime(){
   realtimeChannel=SB.channel('emp-'+emp.id)
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:`employee_id=eq.${emp.id}`},payload=>{
       myMsgs.push(payload.new);
-      buildNotifications();updateBadges();
+      updateBadges();updateBadges();
       if(document.getElementById('pg-msg').classList.contains('on'))renderMsgs();
       else showPopupNotif('💬 New message from Office','office-msg');
     })
     .on('postgres_changes',{event:'UPDATE',schema:'public',table:'expense_batches',filter:`employee_id=eq.${emp.id}`},async payload=>{
       const idx=myBatches.findIndex(b=>b.id===payload.new.id);
       if(idx>=0)myBatches[idx]=payload.new;else myBatches.push(payload.new);
-      buildNotifications();updateBadges();
+      updateBadges();updateBadges();
       const st=payload.new.status;
       showPopupNotif(st==='approved'?'✅ Expenses Approved!':st==='rejected'?'❌ Expenses Rejected':'📋 Expense batch updated','exp-'+st);
     })
@@ -844,13 +864,13 @@ function startRealtime(){
     })
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'payment_status',filter:`employee_id=eq.${emp.id}`},payload=>{
       myPaySt.push(payload.new);
-      buildNotifications();updateBadges();
+      updateBadges();updateBadges();
       showPopupNotif(`💰 Payment ${payload.new.bank_paid?'sent to bank':payload.new.cash_paid?'given as cash':'updated'}!`,'payment');
     })
     .on('postgres_changes',{event:'UPDATE',schema:'public',table:'payment_status',filter:`employee_id=eq.${emp.id}`},payload=>{
       const idx=myPaySt.findIndex(p=>p.id===payload.new.id);
       if(idx>=0)myPaySt[idx]=payload.new;else myPaySt.push(payload.new);
-      buildNotifications();updateBadges();
+      updateBadges();updateBadges();
       const n=payload.new;
       if(n.bank_paid||n.cash_paid)showPopupNotif(`💰 ${n.bank_paid?'Bank transfer':''} ${n.cash_paid?'Cash payment':''} confirmed ✓`,'payment');
     })
@@ -867,87 +887,29 @@ function startRealtime(){
                :st==='rejected'?`❌ Attendance request rejected — ${payload.new.office_note||'see office'}`
                :'📋 Attendance request updated';
       showPopupNotif(msg,'att-req');
-      buildNotifications();
+      updateBadges();
       if(document.getElementById('pg-att').classList.contains('on'))renderAtt();
     })
     .subscribe();
 }
 
-// ── NOTIFICATIONS ──
-function buildNotifications(){
-  notifications=[];
-  // Unread messages from office
-  myMsgs.filter(m=>!m.read&&m.sender==='office').forEach(m=>{
-    notifications.push({id:'msg-'+m.id,type:'msg',icon:'fa-comment',iconBg:'#eff6ff',iconColor:'#2563eb',title:'Message from Office',body:m.body.substring(0,60)+(m.body.length>60?'…':''),time:m.created_at,read:false,action:()=>showPg('msg')});
-  });
-  // Batch status changes
-  myBatches.filter(b=>b.status!=='pending').forEach(b=>{
-    const approved=b.status==='approved';
-    notifications.push({id:'bat-'+b.id,type:'batch',icon:approved?'fa-circle-check':'fa-circle-xmark',iconBg:approved?'#dcfce7':'#fee2e2',iconColor:approved?'#16a34a':'#dc2626',title:approved?'Expenses Approved!':'Expenses Rejected',body:`${MONTHS[parseInt(b.month)-1]} ${b.year} · ${C()}${parseFloat(b.total).toFixed(2)}`,time:b.submitted_at,read:b._read||false,action:()=>showPg('exp')});
-  });
-  // Payment confirmations
-  myPaySt.filter(p=>p.bank_paid||p.cash_paid).forEach(p=>{
-    const mName=MONTHS[p.month]||'';
-    const what=p.bank_paid&&p.cash_paid?'Bank + Cash':p.bank_paid?'Bank transfer':'Cash payment';
-    notifications.push({id:'pay-'+p.id,type:'pay',icon:'fa-sterling-sign',iconBg:'#dcfce7',iconColor:'#16a34a',title:`${what} confirmed`,body:`${mName} ${p.year} · your salary has been paid`,time:p.paid_at,read:p._read||false,action:()=>showPg('pay')});
-  });
-  notifications.sort((a,b)=>new Date(b.time)-new Date(a.time));
-  renderNotifPanel();
-  updateBadges();
-}
-
-function renderNotifPanel(){
-  const list=document.getElementById('notifList');
-  if(!notifications.length){list.innerHTML='<div class="empty-s" style="padding:20px;"><i class="fa-solid fa-bell-slash"></i><p>No notifications yet</p></div>';return;}
-  list.innerHTML=notifications.map(n=>`
-    <div class="notif-item${n.read?'':' unread'}" onclick="n_click('${n.id}')">
-      <div class="ni-icon" style="background:${n.iconBg};color:${n.iconColor};"><i class="fa-solid ${n.icon}"></i></div>
-      <div class="ni-body">
-        <div class="ni-title">${n.title}</div>
-        <div class="ni-sub">${n.body}</div>
-      </div>
-      <div class="ni-time">${fmtTimeAgo(n.time)}</div>
-    </div>`).join('');
-}
-function n_click(id){
-  const n=notifications.find(x=>x.id===id);
-  if(n){n.read=true;renderNotifPanel();updateBadges();n.action?.();toggleNotifPanel();}
-}
-function markAllNotifsRead(){notifications.forEach(n=>n.read=true);renderNotifPanel();updateBadges();}
-function fmtTimeAgo(ts){
-  if(!ts)return'';const d=new Date(ts),now=new Date();
-  const diff=Math.floor((now-d)/60000);
-  if(diff<1)return'Just now';if(diff<60)return diff+'m ago';
-  if(diff<1440)return Math.floor(diff/60)+'h ago';
-  return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
-}
-function toggleNotifPanel(){document.getElementById('notifPanel').classList.toggle('open');}
-document.addEventListener('click',e=>{const p=document.getElementById('notifPanel');const b=document.getElementById('notifBtn');if(p.classList.contains('open')&&!p.contains(e.target)&&!b.contains(e.target))p.classList.remove('open');});
-
-// Popup notification (appears at top for realtime events)
-function showPopupNotif(msg,type){
+function showPopupNotif(msg){
   toast(msg,'s');
-  // Add to notifications list
-  notifications.unshift({id:'rt-'+Date.now(),type:'rt',icon:'fa-bell',iconBg:'#eff6ff',iconColor:'#2563eb',title:'Update',body:msg,time:new Date().toISOString(),read:false,action:()=>{}});
-  renderNotifPanel();updateBadges();
 }
 
 function updateBadges(){
   const unreadMsgs=myMsgs.filter(m=>!m.read&&m.sender==='office').length;
   const mb=document.getElementById('msgBadge');if(mb){mb.textContent=unreadMsgs;mb.style.display=unreadMsgs>0?'':'none';}
-  const pendingBat=myBatches.filter(b=>b.status==='pending').length;
-  const eb=document.getElementById('expBadge');if(eb){eb.textContent=pendingBat;eb.style.display=pendingBat>0?'':'none';}
-  const unreadNotifs=notifications.filter(n=>!n.read).length;
-  const nb=document.getElementById('notifBadge');if(nb){nb.textContent=unreadNotifs>9?'9+':unreadNotifs;nb.style.display=unreadNotifs>0?'flex':'none';}
+  const pendingExp=myExp.filter(e=>e.status==='pending').length;
+  const eb=document.getElementById('expBadge');if(eb){eb.textContent=pendingExp>0?pendingExp:'';eb.style.display=pendingExp>0?'':'none';}
 }
 
 // ── NAVIGATION ──
 function showPg(id){
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));
-  document.getElementById('pg-'+id).classList.add('on');
-  document.getElementById('nb-'+id).classList.add('on');
-  document.getElementById('notifPanel').classList.remove('open');
+  const pg=document.getElementById('pg-'+id);if(pg)pg.classList.add('on');
+  const nb=document.getElementById('nb-'+id);if(nb)nb.classList.add('on');
   if(id==='home')renderHome();
   else if(id==='att'){renderAtt();buildTodayMarkSection();}
   else if(id==='exp')renderExpenses();
@@ -1053,6 +1015,9 @@ function renderHome(){
   }
   // Scroll to today
   setTimeout(()=>{const t=strip.children[now.getDate()-1];if(t)t.scrollIntoView({inline:'center',behavior:'smooth'});},100);
+
+  // Today mark button on home
+  buildHomeTodayMark();
 
   // Recent expenses
   const recent=myExp.slice(0,5);
@@ -1229,27 +1194,7 @@ function renderAtt(){
   }
   document.getElementById('attRecords').innerHTML=html||'<div class="empty-s"><i class="fa-solid fa-calendar-xmark"></i><p>No records for this month</p></div>';
 
-  // Show my requests for this month
-  const mReqs=myAttReqs.filter(r=>{const d=new Date(r.date+'T00:00:00');return d.getMonth()===m&&d.getFullYear()===y;});
-  const reqEl=document.getElementById('myAttReqsList');
-  if(reqEl){
-    reqEl.innerHTML=mReqs.length?mReqs.map(req=>{
-      const isPending=req.status==='pending';const isApproved=req.status==='approved';const isRejected=req.status==='rejected';
-      const dt2=new Date(req.date+'T00:00:00');
-      return`<div style="background:var(--card);border:1px solid var(--bdr);border-radius:14px;padding:13px 15px;margin-bottom:10px;box-shadow:var(--sh);">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
-          <div><div style="font-size:13px;font-weight:700;">${dt2.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}</div>
-          <div style="font-size:12px;color:var(--txtm);">${req.sign_in} – ${req.sign_out} · ${req.hours}h</div></div>
-          <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:${isPending?'var(--ambl)':isApproved?'var(--grnl)':'var(--redl)'};color:${isPending?'var(--amb)':isApproved?'var(--grn)':'var(--red)'};">
-            <i class="fa-solid fa-${isPending?'clock':isApproved?'circle-check':'circle-xmark'}" style="margin-right:3px;"></i>${isPending?'Pending':isApproved?'Approved':'Rejected'}
-          </span>
-        </div>
-        ${req.employee_note?`<div style="font-size:12px;color:var(--txt2);margin-bottom:5px;">Your note: ${req.employee_note}</div>`:''}
-        ${isApproved?`<div style="font-size:12px;color:var(--grn);font-weight:600;"><i class="fa-solid fa-circle-check" style="margin-right:4px;"></i>Office approved — attendance updated</div>`:''}
-        ${isRejected&&req.office_note?`<div style="font-size:12px;color:var(--red);"><i class="fa-solid fa-circle-xmark" style="margin-right:4px;"></i>Office note: ${req.office_note}</div>`:''}
-      </div>`;
-    }).join(''):'<div class="empty-s" style="padding:14px;"><i class="fa-solid fa-inbox"></i><p>No requests this month</p></div>';
-  }
+
 
   // Build today section
   if(m===new Date().getMonth()&&y===new Date().getFullYear())buildTodayMarkSection();
@@ -1261,7 +1206,20 @@ function populateCats(){
   (cfg.categories||['Travel','Meals','Equipment','Software','Utilities','Accommodation']).forEach(c=>{sel.appendChild(new Option(c,c));});
 }
 let _rcptFile=null;
-function rcptChosen(input){_rcptFile=input.files[0];const r=new FileReader();r.onload=e=>{const img=document.getElementById('rcptPreview');img.src=e.target.result;img.style.display='block';};r.readAsDataURL(_rcptFile);}
+function rcptChosen(input){
+  _rcptFile=input.files[0];if(!_rcptFile)return;
+  const fnEl=document.getElementById('rcptFileName');
+  if(fnEl){fnEl.textContent='📎 '+_rcptFile.name;fnEl.style.display='block';}
+  const isPdf=/\.pdf$/i.test(_rcptFile.name);
+  if(!isPdf){const r=new FileReader();r.onload=e=>{const img=document.getElementById('rcptPreview');img.src=e.target.result;img.style.display='block';};r.readAsDataURL(_rcptFile);}
+  else{const img=document.getElementById('rcptPreview');img.style.display='none';} // PDF: show name only
+}
+function toggleVATvis(){
+  const cb=document.getElementById('expVAT');
+  const vis=document.getElementById('vatToggleVis');
+  cb.checked=!cb.checked;
+  if(vis)vis.style.background=cb.checked?'var(--grn)':'var(--bdr)';
+}
 async function submitExp(){
   const merchant=document.getElementById('expMerchant').value.trim();
   const amt=parseFloat(document.getElementById('expAmt').value);
@@ -1274,7 +1232,7 @@ async function submitExp(){
     const {error}=await SB.storage.from('employee-docs').upload(path,_rcptFile,{upsert:true});
     if(!error){const {data:ud}=SB.storage.from('employee-docs').getPublicUrl(path);fileUrl=ud?.publicUrl||null;}
   }
-  const r=await SB.from('expenses').insert({employee_id:emp.id,date,merchant,category:document.getElementById('expCat').value||null,amount:amt,notes:document.getElementById('expNotes').value||null,receipt_url:fileUrl,status:'draft',tags:[],flagged:false}).select().single();
+  const r=await SB.from('expenses').insert({employee_id:emp.id,date,merchant,category:document.getElementById('expCat').value||null,amount:amt,notes:document.getElementById('expNotes').value||null,receipt_url:fileUrl,status:'pending',tags:document.getElementById('expVAT')?.checked?['VAT']:[],flagged:false}).select().single();
   if(r.error){toast(r.error.message,'e');return;}
   myExp.unshift(r.data);
   document.getElementById('expMerchant').value='';document.getElementById('expAmt').value='';document.getElementById('expNotes').value='';document.getElementById('expCat').value='';document.getElementById('rcptPreview').style.display='none';_rcptFile=null;document.getElementById('rcptInput').value='';
@@ -1288,19 +1246,27 @@ function renderExpenses(){
   document.getElementById('myExp').innerHTML=mExp.length?mExp.map(e=>{
     const catColors={'Travel':'#2563eb','Meals':'#16a34a','Equipment':'#7c3aed','Software':'#0891b2','Fuel':'#d97706','Other':'#64748b'};
     const col=catColors[e.category]||'#64748b';
-    return`<div class="exp-row">
+    const isFlagged=e.flagged;
+    const isRejected=e.status==='rejected';
+    const isApproved=e.status==='approved';
+    return`<div class="exp-row" onclick="${isApproved?`if(!event.target.closest('a'))editAndResendExp('${e.id}')`:''}" style="cursor:${isApproved?'pointer':'default'};${isFlagged?'background:rgba(220,38,38,0.04);border-radius:10px;padding:8px;':isRejected?'background:rgba(220,38,38,0.03);border-radius:10px;padding:8px;':''}">
       <div class="exp-icon" style="background:${col}18;color:${col};"><i class="fa-solid fa-receipt"></i></div>
       <div style="flex:1;">
-        <div class="exp-name">${e.merchant||'—'}${e.flagged?'<span style="color:var(--red);font-size:10px;margin-left:5px;">⚑</span>':''}</div>
+        <div class="exp-name">${e.merchant||'—'}</div>
         <div class="exp-meta">${e.category||'—'} · ${fmtDS(e.date)}</div>
-        <div style="display:flex;align-items:center;gap:6px;margin-top:4px;">
-          <span class="exp-status ${e.status||'draft'}">${e.status==='approved'?'✓ Approved':e.status==='rejected'?'✗ Rejected':e.status==='pending'?'⏳ Pending':'Draft'}</span>
-          ${e.receipt_url?`<a href="${e.receipt_url}" target="_blank" style="font-size:11px;color:var(--acc);">View receipt</a>`:''}
+        <div style="display:flex;align-items:center;gap:6px;margin-top:5px;flex-wrap:wrap;">
+          <span class="exp-status ${e.status||'draft'}">${isApproved?'✓ Approved':isRejected?'✗ Rejected':e.status==='pending'?'⏳ Pending review':'Draft'}</span>
+          ${e.receipt_url?`<a href="${e.receipt_url}" target="_blank" onclick="event.stopPropagation()" style="font-size:10px;color:var(--txtm);display:inline-flex;align-items:center;gap:2px;text-decoration:none;"><i class="fa-solid fa-paperclip" style="font-size:9px;"></i>receipt</a>`:''}
         </div>
+        ${isFlagged?`<div style="font-size:11px;color:var(--red);margin-top:4px;font-weight:600;"><i class="fa-solid fa-flag" style="margin-right:3px;"></i>Flagged by office${e.flag_note?': "'+e.flag_note+'"':''}</div>`:''}
+        ${isRejected?`<div style="display:flex;gap:6px;margin-top:7px;"><button onclick="editAndResendExp('${e.id}')" style="font-size:12px;font-weight:600;padding:5px 10px;border-radius:8px;border:1.5px solid var(--acc);background:var(--accl);color:var(--acc);cursor:pointer;display:flex;align-items:center;gap:5px;"><i class="fa-solid fa-rotate-left"></i>Edit & Resend</button></div>`:''}
       </div>
-      <div style="text-align:right;"><div class="exp-amt">${fmt(e.amount)}</div>${e.flagged?'':`<button onclick="toggleFlag('${e.id}')" style="font-size:11px;color:var(--txtm);background:none;border:1px solid var(--bdr);border-radius:5px;padding:2px 7px;cursor:pointer;margin-top:4px;">⚑ Flag</button>`}</div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div class="exp-amt" style="color:${isApproved?'var(--grn)':isRejected?'var(--red)':'var(--grn)'};">${fmt(e.amount)}</div>
+        ${!isFlagged&&!isApproved?`<button onclick="toggleFlag('${e.id}')" style="font-size:10px;color:var(--txtm);background:none;border:1px solid var(--bdr);border-radius:5px;padding:2px 6px;cursor:pointer;margin-top:4px;">⚑ Flag</button>`:''}
+      </div>
     </div>`;
-  }).join('')+'<div style="border-top:1px solid var(--bdr);padding-top:9px;margin-top:9px;display:flex;justify-content:space-between;"><span style="font-size:13px;font-weight:700;">Total</span><span style="font-family:JetBrains Mono;font-size:14px;font-weight:800;color:var(--grn);">${fmt(total)}</span></div>':
+  }).join('')+`<div style="border-top:1px solid var(--bdr);padding-top:9px;margin-top:9px;display:flex;justify-content:space-between;"><span style="font-size:13px;font-weight:700;">Total</span><span style="font-family:JetBrains Mono;font-size:14px;font-weight:800;color:var(--grn);">${fmt(total)}</span></div>`:
   '<div class="empty-s"><i class="fa-solid fa-receipt"></i><p>No expenses for this month</p></div>';
 
   // Approval batches
@@ -1316,8 +1282,40 @@ function renderExpenses(){
       ${pending?`<div style="font-size:12px;color:var(--amb);font-weight:600;"><i class="fa-solid fa-clock" style="margin-right:4px;"></i>Awaiting office review</div>`:''}
     </div>`;
   }).join(''):'<div class="empty-s"><i class="fa-solid fa-inbox"></i><p>No submissions yet</p></div>';
-  document.getElementById('myBatches').innerHTML=batchHtml;
+  const batchesEl=document.getElementById('myBatches');if(batchesEl)batchesEl.innerHTML=batchHtml;
 }
+async function editAndResendExp(id){
+  const e=myExp.find(x=>x.id===id);if(!e)return;
+  // Pre-fill form with existing data
+  document.getElementById('expMerchant').value=e.merchant||'';
+  document.getElementById('expAmt').value=e.amount||'';
+  document.getElementById('expNotes').value=e.notes||'';
+  document.getElementById('expDate').value=e.date||dk(new Date());
+  document.getElementById('expCat').value=e.category||'';
+  // Show edit mode notice
+  showPg('exp');
+  // Scroll to form
+  document.getElementById('pg-exp').scrollTop=0;
+  // Change submit button to update mode
+  const btn=document.querySelector('#pg-exp .btn-p');
+  if(btn){
+    btn.innerHTML='<i class="fa-solid fa-paper-plane"></i>Update & Resend';
+    btn.onclick=async()=>{
+      const merchant=document.getElementById('expMerchant').value.trim();
+      const amt=parseFloat(document.getElementById('expAmt').value);
+      if(!merchant||!amt){toast('Fill in description and amount','e');return;}
+      const r=await SB.from('expenses').update({merchant,amount:amt,category:document.getElementById('expCat').value||null,notes:document.getElementById('expNotes').value||null,status:'pending',flagged:false,flag_note:null,date:document.getElementById('expDate').value}).eq('id',id);
+      if(r.error){toast(r.error.message,'e');return;}
+      const idx=myExp.findIndex(x=>x.id===id);if(idx>=0){myExp[idx]={...myExp[idx],merchant,amount:amt,status:'pending',flagged:false,flag_note:null};}
+      // Reset button
+      btn.innerHTML='<i class="fa-solid fa-paper-plane"></i>Submit Expense';btn.onclick=submitExp;
+      ['expMerchant','expAmt','expNotes'].forEach(x=>{document.getElementById(x).value='';});
+      toast('Expense updated and resubmitted!','s');renderExpenses();
+    };
+  }
+  toast('Edit the expense above and tap Update & Resend','i');
+}
+
 async function toggleFlag(id){
   const e=myExp.find(x=>x.id===id);if(!e)return;
   const reason=e.flagged?null:prompt('Reason for flagging:');
@@ -1339,6 +1337,7 @@ function renderPay(){
   const bonus=mRecs.reduce((s,r)=>s+(parseFloat(r.bonus)||0),0);
   const expTotal=mExp.reduce((s,e)=>s+(parseFloat(e.amount)||0),0);
   const total=base+ot+bonus;
+  const lifetimeBonus=myAtt.reduce((s,r)=>s+(parseFloat(r.bonus)||0),0);
   const days=dim(y,m);
   const wD=Array.from({length:days},(_,i)=>new Date(y,m,i+1).getDay()!==0).filter(Boolean).length;
   const pres=activeR.filter(r=>new Date(r.date+'T00:00:00').getDay()!==0).length;
@@ -1385,18 +1384,19 @@ function renderPay(){
       <div class="sal-sub">Estimated · Tax &amp; NI not included</div>
       <div class="sal-grid">
         <div class="sal-it"><div class="sal-it-l">Base</div><div class="sal-it-v">${fmt(base)}</div></div>
-        <div class="sal-it"><div class="sal-it-l">Overtime</div><div class="sal-it-v">${fmt(ot)}</div></div>
-        <div class="sal-it"><div class="sal-it-l">Bonus</div><div class="sal-it-v">${fmt(bonus)}</div></div>
+        <div class="sal-it"><div class="sal-it-l">Overtime</div><div class="sal-it-v">${ot>0?fmt(ot):(otHrs>0?otHrs.toFixed(1)+'h':'£0.00')}</div></div>
+        ${lifetimeBonus>0?`<div class="sal-it"><div class="sal-it-l">Bonus</div><div class="sal-it-v">${fmt(bonus)}</div></div>`:''}
         <div class="sal-it"><div class="sal-it-l">Expenses</div><div class="sal-it-v">${fmt(expTotal)}</div></div>
       </div>
     </div>
     ${payStatusHtml}
     <div class="card"><div class="card-b">
-      <div class="row-div"><span>Days Present</span><strong>${pres}/${wD}</strong></div>
+      ${(()=>{const suns=activeR.filter(r=>new Date(r.date+'T00:00:00').getDay()===0);return suns.length?`<div class="row-div" style="background:var(--ambl);border-radius:8px;padding:8px 11px;margin:4px 0;"><span style="font-weight:600;color:var(--amb);">Sundays Worked ☀️</span><strong style="color:var(--amb);">${suns.length} day${suns.length>1?'s':''}</strong></div>`:'';})()}
+      <div class="row-div"><span>Weekdays Present</span><strong>${pres}/${wD}</strong></div>
       <div class="row-div"><span>Attendance Rate</span><strong style="color:${pct>=80?'var(--grn)':pct>=60?'var(--amb)':'var(--red)'};">${pct}%</strong></div>
       <div class="row-div"><span>Total Hours</span><strong>${hrs.toFixed(1)}h</strong></div>
       <div class="row-div"><span>Overtime Hours</span><strong style="color:var(--amb);">${otHrs.toFixed(1)}h</strong></div>
-      ${(()=>{const lb=myAtt.reduce((s,r)=>s+(parseFloat(r.bonus)||0),0);return lb>0&&bonus>0?`<div class="row-div" style="background:var(--grnl);border-radius:8px;padding:9px 11px;margin:5px 0;"><span style="font-weight:700;color:var(--grn);">Bonus this month</span><strong style="color:var(--grn);">${fmt(bonus)}</strong></div>`:''})()}
+      ${lifetimeBonus>0&&bonus>0?`<div class="row-div" style="background:var(--grnl);border-radius:8px;padding:9px 11px;margin:5px 0;"><span style="font-weight:700;color:var(--grn);">Bonus this month</span><strong style="color:var(--grn);">${fmt(bonus)}</strong></div>`:''}
     </div></div>`;
 
   // Pay history - show each month that has been paid with running balance
@@ -1473,7 +1473,7 @@ async function renderMsgs(){
     await SB.from('messages').update({read:true}).eq('employee_id',emp.id).eq('sender','office');
     unread.forEach(m=>m.read=true);
   }
-  buildNotifications();updateBadges();
+  updateBadges();updateBadges();
   if(!myMsgs.length){area.innerHTML='<div style="text-align:center;color:var(--txtm);font-size:13px;padding:20px;">No messages yet. Send a message to the office.</div>';return;}
   area.innerHTML=myMsgs.map(m=>{
     const isMe=m.sender!=='office';
@@ -1497,6 +1497,36 @@ async function sendMsg(){
 // ═══════════════════════════════════════════════════
 let markSt={h:'09',m:'00'},markEn={h:'17',m:'00'};
 const STD_START='09:00', STD_END='17:00', STD_HOURS=8;
+
+function buildHomeTodayMark(){
+  const el=document.getElementById('homeTodayMark');
+  if(!el)return;
+  const today=dk(new Date());
+  const todayRec=myAtt.find(a=>a.date===today);
+  const todayReq=myAttReqs.find(r=>r.date===today);
+  if(todayRec){
+    const stColors={P:'var(--grn)',A:'var(--red)',L:'#2563eb',S:'var(--pur)',HD:'var(--amb)',LA:'var(--amb)',H:'#2563eb',UL:'var(--txtm)'};
+    const c=stColors[todayRec.status]||'var(--txtm)';
+    el.innerHTML=`<div style="background:var(--card);border:1px solid var(--bdr);border-radius:14px;padding:12px 15px;margin-bottom:12px;display:flex;align-items:center;gap:10px;box-shadow:var(--sh);">
+      <div style="width:40px;height:40px;border-radius:11px;background:${c}18;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-calendar-check" style="color:${c};font-size:17px;"></i></div>
+      <div style="flex:1;"><div style="font-size:12px;color:var(--txtm);">Today's attendance</div>
+      <div style="font-size:14px;font-weight:700;color:${c};">${STATUSES[todayRec.status]||todayRec.status} · ${todayRec.hours||'?'}h</div>
+      <div style="font-size:11px;color:var(--txtm);">${todayRec.sign_in||''}${todayRec.sign_out?' – '+todayRec.sign_out:''}</div></div>
+      <button onclick="showPg('att')" style="background:none;border:1px solid var(--bdr);border-radius:10px;padding:7px 11px;font-size:12px;font-weight:600;cursor:pointer;color:var(--acc);">View →</button>
+    </div>`;
+  } else if(todayReq&&todayReq.status==='pending'){
+    el.innerHTML=`<div style="background:var(--ambl);border:1px solid rgba(217,119,6,0.2);border-radius:14px;padding:12px 15px;margin-bottom:12px;display:flex;align-items:center;gap:10px;">
+      <i class="fa-solid fa-clock" style="color:var(--amb);font-size:20px;flex-shrink:0;"></i>
+      <div style="flex:1;"><div style="font-size:13px;font-weight:700;color:var(--amb);">Request pending approval</div>
+      <div style="font-size:12px;color:var(--txt2);">${todayReq.sign_in} – ${todayReq.sign_out} · ${todayReq.hours}h</div></div>
+    </div>`;
+  } else {
+    const isSun=new Date().getDay()===0;
+    el.innerHTML=`<button onclick="openMarkModal('${today}')" class="mark-today-btn">
+      <i class="fa-solid fa-fingerprint" style="font-size:22px;"></i>Tap to Mark Today${isSun?' 🌞':''}
+    </button>`;
+  }
+}
 
 function buildTodayMarkSection(){
   const today=dk(new Date());
@@ -1722,6 +1752,30 @@ async function tryAutoLogin(){
   initAuth();
 }
 tryAutoLogin();
+
+// ── NETWORK & ERROR HANDLING ──
+window.addEventListener('online', ()=>{
+  toast('Back online — syncing...','s');
+  if(typeof loadAllData==='function')loadAllData();
+  if(typeof silentSync==='function')silentSync();
+});
+window.addEventListener('offline', ()=>{
+  toast('No internet connection','e');
+  const sd=document.getElementById('syncStrip')||document.getElementById('syncBadge');
+  if(sd&&typeof setSyncUI==='function')setSyncUI('offline');
+  else if(sd&&typeof setSyncStatus==='function')setSyncStatus('err','Offline');
+});
+window.onerror=function(msg,url,line,col,err){
+  console.error('DAM Error:',msg,'at',url,line);
+  if(msg&&!msg.includes('Script error'))
+    toast('Something went wrong — try refreshing','e');
+  return false;
+};
+window.addEventListener('unhandledrejection',e=>{
+  console.error('Unhandled promise:',e.reason);
+  if(e.reason?.message&&!e.reason.message.includes('aborted'))
+    toast('Connection error — check internet','e');
+});
 </script>
 </body>
 </html>
