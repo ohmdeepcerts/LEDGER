@@ -32,7 +32,7 @@
   --sh:0 1px 3px rgba(0,0,0,0.3);--shm:0 4px 6px rgba(0,0,0,0.3);
   --shl:0 10px 25px rgba(0,0,0,0.4);
 }
-*{margin:0;padding:0;box-sizing:border-box;}
+*{margin:0;padding:0;box-sizing:border-box;touch-action:manipulation;}
 body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--txt);display:flex;height:100vh;overflow:hidden;}
 
 /* AUTH */
@@ -108,6 +108,43 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .page{display:none;}
 .page.active{display:block;}
 .page-lf.active{display:flex;flex-direction:column;padding:0;overflow:hidden;}
+
+/* ══ UNIVERSAL NAV PILLS — Today · ‹ Day › · ‹ Month › · ‹ Year › ══ */
+/* Each segment is its own pill — independent, consistent, readable */
+
+/* Wrapper that holds all pills in a row */
+.nav-pills{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;}
+
+/* Today pill */
+.np-today{height:36px;padding:0 14px;border-radius:20px;border:1.5px solid var(--acc);background:var(--accl);color:var(--acc);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all 0.18s;display:flex;align-items:center;gap:5px;}
+.np-today:hover{background:var(--acc);color:#fff;transform:translateY(-1px);box-shadow:0 3px 10px rgba(37,99,235,0.25);}
+.np-today:active{transform:scale(0.96);}
+
+/* Nav segment pill: ‹ label › */
+.np-seg{display:flex;align-items:center;gap:0;border-radius:20px;border:1.5px solid var(--bdr);background:var(--card);overflow:hidden;box-shadow:var(--sh);height:36px;}
+.np-seg-btn{width:32px;height:36px;border:none;background:transparent;color:var(--txt2);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:all 0.18s;flex-shrink:0;}
+.np-seg-btn:hover{background:var(--card2);color:var(--acc);}
+.np-seg-btn:active{background:var(--accl);}
+.np-seg-div{width:1px;background:var(--bdr);height:20px;flex-shrink:0;}
+.np-seg-label{font-size:13px;font-weight:700;color:var(--txt);white-space:nowrap;padding:0 12px;min-width:70px;text-align:center;}
+.np-seg-label.wide{min-width:130px;}
+.np-seg-label.narrow{min-width:50px;}
+
+/* Calendar icon pill */
+.np-cal{width:36px;height:36px;border-radius:20px;border:1.5px solid var(--bdr);background:var(--card);color:var(--txtm);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all 0.18s;box-shadow:var(--sh);}
+.np-cal:hover{border-color:var(--acc);color:var(--acc);background:var(--accl);}
+
+/* Keep old .nav-bar for any missed references */
+.nav-bar{display:flex;align-items:center;gap:0;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;overflow:hidden;box-shadow:var(--sh);flex-shrink:0;}
+.nav-bar-btn{width:36px;height:36px;border:none;background:transparent;color:var(--txt2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;transition:all 0.18s;}
+.nav-bar-btn:hover{background:var(--card2);color:var(--acc);}
+.nav-bar-btn:active{background:var(--accl);}
+.nav-bar-divider{width:1px;background:var(--bdr);height:20px;}
+.nav-bar-label{padding:0 12px;font-size:13px;font-weight:700;color:var(--txt);white-space:nowrap;min-width:90px;text-align:center;}
+.nav-bar-today{padding:0 10px;font-size:12px;font-weight:700;color:var(--acc);cursor:pointer;border-left:1px solid var(--bdr);height:100%;display:flex;align-items:center;}
+.nav-bar-today:hover{background:var(--accl);}
+.nav-bar-cal{width:34px;height:36px;border:none;background:transparent;color:var(--txtm);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;border-left:1px solid var(--bdr);}
+.nav-bar-cal:hover{background:var(--card2);color:var(--acc);}
 
 /* ── GB Finance style buttons ── */
 .btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--rs);border:1.5px solid var(--bdr);font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:inherit;letter-spacing:-0.01em;}
@@ -470,6 +507,7 @@ tr.rsun td{background:var(--sut)!important;}
     <div class="sb-sec">Main</div>
     <div class="nav-item active" data-page="dashboard"><i class="fa-solid fa-gauge-high"></i><span>Dashboard</span></div>
     <div class="nav-item" data-page="mark"><i class="fa-solid fa-pen-to-square"></i><span>Mark Attendance</span></div>
+    <div class="nav-item" data-page="att-requests"><i class="fa-solid fa-inbox"></i><span>Att. Requests</span><span class="nb" id="attReqBadge" style="display:none;">0</span></div>
     <div class="sb-sec">Expenses</div>
     <div class="nav-item" data-page="ledger"><i class="fa-solid fa-receipt"></i><span>Expense Ledger</span></div>
     <div class="nav-item" data-page="approvals"><i class="fa-solid fa-check-circle"></i><span>Approvals</span><span class="nb" id="aprBadge" style="display:none">0</span></div>
@@ -510,37 +548,112 @@ tr.rsun td{background:var(--sut)!important;}
 
     <!-- DASHBOARD -->
     <div class="page active" id="page-dashboard">
-      <div class="ph">
-        <div><h1>Dashboard</h1><p id="dashDate"></p></div>
-        <div class="bg">
-          <div class="ps"><select id="dashStaff" onchange="renderDashboard()"><option value="All">All Staff</option></select><select id="dashMonth" onchange="renderDashboard()"></select><select id="dashYear" onchange="renderDashboard()"></select></div>
-          <button class="btn btn-p" onclick="navigate('mark')"><i class="fa-solid fa-pen-to-square"></i>Mark Today</button>
+      <!-- FILTER BAR -->
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;padding:10px 14px;background:var(--card);border:1px solid var(--bdr);border-radius:var(--r);box-shadow:var(--sh);">
+        <div style="flex:1;"><h1 style="font-size:20px;font-weight:800;line-height:1;">Dashboard</h1><p style="font-size:12px;color:var(--txt2);margin-top:3px;" id="dashDate"></p></div>
+        <!-- Filter pills -->
+        <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;">
+          <select id="dashStaff" onchange="renderDashboard()" style="padding:6px 10px;border:1.5px solid var(--bdr);border-radius:20px;font-size:12px;font-weight:600;color:var(--txt2);background:var(--card);font-family:inherit;outline:none;cursor:pointer;appearance:none;-webkit-appearance:none;padding-right:24px;background-image:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="6"><path d="M0 0l5 6 5-6z" fill="%2394a3b8"/></svg>');background-repeat:no-repeat;background-position:right 8px center;"><option value="All">All Staff</option></select>
+          <div class="nav-pills">
+            <div class="np-seg">
+              <button class="np-seg-btn" onclick="shiftDash(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+              <div class="np-seg-div"></div>
+              <span class="np-seg-label" id="dashDisp_m" style="min-width:72px;">June</span>
+              <div class="np-seg-div"></div>
+              <button class="np-seg-btn" onclick="shiftDash(1)"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+            <div class="np-seg">
+              <button class="np-seg-btn" onclick="shiftDash(-12)"><i class="fa-solid fa-chevron-left"></i></button>
+              <div class="np-seg-div"></div>
+              <span class="np-seg-label narrow" id="dashDisp_y" style="min-width:52px;">2026</span>
+              <div class="np-seg-div"></div>
+              <button class="np-seg-btn" onclick="shiftDash(12)"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+          </div>
+          <select id="dashMonth" style="display:none;"></select>
+          <select id="dashYear" style="display:none;"></select>
+        </div>
+        <!-- Quick actions -->
+        <div style="display:flex;gap:7px;flex-wrap:wrap;">
+          <button class="btn btn-p btn-sm" onclick="navigate('mark')"><i class="fa-solid fa-pen-to-square"></i>Mark Today</button>
+          <button class="btn btn-o btn-sm" onclick="navigate('ledger')"><i class="fa-solid fa-receipt"></i>Expense</button>
+          <button class="btn btn-a btn-sm" onclick="navigate('approvals')" id="qaApproveBtn"><i class="fa-solid fa-check-circle"></i>Approvals</button>
         </div>
       </div>
       <div id="alertBanner"></div>
-      <div id="docReminders"></div>
+      <div id="docReminderBanner"></div>
+      <!-- NOT MARKED TODAY -->
       <div class="card" id="nmCard" style="display:none;margin-bottom:14px;">
         <div class="ch"><div><div class="ct"><i class="fa-solid fa-circle-exclamation" style="color:var(--amb);margin-right:5px;"></i>Not Yet Marked Today</div><div class="cs" id="nmSub"></div></div><button class="btn btn-p btn-sm" onclick="navigate('mark')"><i class="fa-solid fa-pen-to-square"></i>Mark Now</button></div>
         <div class="cb" id="nmList"></div>
       </div>
-      <div class="dash-grid" id="dashGrid">
-        <!-- Built by JS -->
+      <!-- ROW 1: 8 KPI CARDS -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:14px;" id="kpiRow"></div>
+      <!-- ROW 2: DAILY PRESENCE (scrollable) + PAYROLL TREND -->
+      <div style="display:grid;grid-template-columns:320px 1fr;gap:14px;margin-bottom:14px;">
+        <div class="card" style="display:flex;flex-direction:column;">
+          <div class="ch"><div class="ct"><i class="fa-solid fa-users" style="color:var(--blu);margin-right:5px;"></i>Today's Team</div><div class="cs" id="todayDate2"></div></div>
+          <div id="todayPresenceList" style="overflow-y:auto;max-height:260px;padding:0 14px;flex:1;"></div>
+        </div>
+        <div class="card"><div class="ch"><div class="ct"><i class="fa-solid fa-chart-bar" style="color:var(--pur);margin-right:5px;"></i>Monthly Cost Breakdown</div><div class="cs">Last 6 months</div></div><div style="padding:14px;height:240px;"><canvas id="payrollTrendChart"></canvas></div></div>
       </div>
+      <!-- ROW 3: ATTENDANCE HEATMAP (full width) -->
+      <div style="margin-bottom:14px;">
+        <div class="card"><div class="ch"><div class="ct"><i class="fa-solid fa-calendar-days" style="color:var(--grn);margin-right:5px;"></i>Attendance Heatmap</div><div class="cs">Last 12 weeks · click any day to mark</div></div><div style="padding:14px;overflow-x:auto;" id="attHeatmap"></div></div>
+      </div>
+      <!-- ROW 4: EXPENSE DONUT + OT HOTSPOT (scrollable top 5) -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+        <div class="card"><div class="ch"><div class="ct"><i class="fa-solid fa-chart-pie" style="color:var(--amb);margin-right:5px;"></i>Expense Categories</div><div class="cs" id="donutSub"></div></div><div style="padding:10px;height:200px;display:flex;align-items:center;justify-content:center;"><canvas id="expDonutChart"></canvas></div></div>
+        <div class="card"><div class="ch"><div class="ct"><i class="fa-solid fa-fire" style="color:var(--red);margin-right:5px;"></i>OT Hotspot</div><div class="cs">Top 5 this month</div></div><div id="otHotspot" style="max-height:200px;overflow-y:auto;padding:0 14px;"></div></div>
+      </div>
+      <!-- ROW 5: STAFF PERFORMANCE (scrollable grid) -->
+      <div style="margin-bottom:14px;">
+        <div class="card"><div class="ch"><div class="ct"><i class="fa-solid fa-medal" style="color:var(--amb);margin-right:5px;"></i>Staff Performance</div><div class="cs" id="perfSub"></div></div><div class="cb" id="staffPerfRings"></div></div>
+      </div>
+      <!-- ROW 6: TOP EARNERS (top 5 scrollable) + SMART INSIGHTS -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+        <div class="card"><div class="ch"><div class="ct"><i class="fa-solid fa-ranking-star" style="color:var(--grn);margin-right:5px;"></i>Top Earners</div><div class="cs">This month · top 5</div></div><div id="topEarners" style="max-height:220px;overflow-y:auto;padding:0 14px;"></div></div>
+        <div class="card"><div class="ch"><div class="ct"><i class="fa-solid fa-lightbulb" style="color:var(--tel);margin-right:5px;"></i>Smart Insights</div></div><div class="cb" id="smartInsights"></div></div>
+      </div>
+      <!-- ROW 7: ATTENDANCE WARNINGS (scrollable) + DOCUMENT EXPIRY -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+        <div class="card"><div class="ch"><div class="ct"><i class="fa-solid fa-triangle-exclamation" style="color:var(--amb);margin-right:5px;"></i>Attendance Warnings</div><span style="font-size:10px;font-weight:700;padding:2px 9px;border-radius:20px;background:var(--ambl);color:var(--amb);" id="warnThresh">Below 80%</span></div><div id="warnTable" style="max-height:220px;overflow-y:auto;padding:0 12px;"></div></div>
+        <div class="card"><div class="ch"><div class="ct"><i class="fa-solid fa-file-circle-exclamation" style="color:var(--red);margin-right:5px;"></i>Document Expiry</div></div><div id="docExpiryTimeline" style="max-height:220px;overflow-y:auto;padding:0 14px;"></div></div>
+      </div>
+    </div>
+    <!-- ATTENDANCE REQUESTS -->
+    <div class="page" id="page-att-requests">
+      <div class="ph"><div><h1>Attendance Requests</h1><p>Employee time submissions — approve or edit before saving</p></div></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:9px;margin-bottom:9px;">
+        <div class="tabs" style="margin-bottom:0;border-bottom:none;">
+          <div class="tab active" onclick="setAttReqTab('pending',this)">Pending</div>
+          <div class="tab" onclick="setAttReqTab('approved',this)">Approved</div>
+          <div class="tab" onclick="setAttReqTab('rejected',this)">Rejected</div>
+          <div class="tab" onclick="setAttReqTab('all',this)">All</div>
+        </div>
+        <button class="btn btn-d btn-sm" onclick="clearAllAttReqs()"><i class="fa-solid fa-trash"></i>Clear All Old</button>
+      </div>
+      <div id="attReqBody"></div>
     </div>
 
     <!-- MARK ATTENDANCE -->
     <div class="page" id="page-mark">
       <div class="ph"><div><h1>Mark Attendance</h1><p>Dots for quick mark · auto-calculates OT · auto-saves</p></div><button class="btn btn-s" onclick="saveAllAttendance()"><i class="fa-solid fa-floppy-disk"></i>Save All</button></div>
-      <div class="dn" id="markNav">
-        <button class="dn-today" onclick="setMarkToday()">Today</button>
-        <button class="dn-btn" onclick="shiftMark(-1)"><i class="fa-solid fa-chevron-left"></i></button>
-        <span class="dd" id="markDisp"></span>
-        <button class="dn-btn" onclick="shiftMark(1)"><i class="fa-solid fa-chevron-right"></i></button>
-        <span id="markDayName" style="font-size:12px;color:var(--txt2);font-weight:600;white-space:nowrap;"></span>
-        <span id="sunBadge" style="display:none;" class="sun-b">☀ Sunday</span>
-        <span id="satBadge" style="display:none;" class="sat-b">📅 Saturday</span>
-        <input type="date" id="markPicker" style="padding:4px 8px;border:1px solid var(--bdr);border-radius:6px;font-size:12px;background:var(--card);color:var(--txt);outline:none;flex-shrink:0;" onchange="setMarkDate(this.value)">
-        <div style="margin-left:auto;display:flex;gap:5px;">
+      <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:14px;padding:10px 14px;background:var(--card);border:1px solid var(--bdr);border-radius:var(--r);box-shadow:var(--sh);">
+        <div class="nav-pills">
+          <button class="np-today" onclick="setMarkToday()"><i class="fa-solid fa-circle-dot"></i>Today</button>
+          <div class="np-seg">
+            <button class="np-seg-btn" onclick="shiftMark(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+            <div class="np-seg-div"></div>
+            <span class="np-seg-label wide" id="markDisp">—</span>
+            <div class="np-seg-div"></div>
+            <button class="np-seg-btn" onclick="shiftMark(1)"><i class="fa-solid fa-chevron-right"></i></button>
+          </div>
+          <input type="date" id="markPicker" style="opacity:0;width:0;height:0;position:absolute;" onchange="setMarkDate(this.value)">
+          <button class="np-cal" onclick="document.getElementById('markPicker').showPicker?document.getElementById('markPicker').showPicker():document.getElementById('markPicker').click()"><i class="fa-solid fa-calendar-days"></i></button>
+        </div>
+        <span id="dayBadge" style="font-size:12px;font-weight:700;padding:5px 13px;border-radius:20px;background:var(--accl);color:var(--acc);">Monday</span>
+        <div style="margin-left:auto;display:flex;gap:6px;">
           <button class="btn btn-o btn-sm" onclick="markAll('P')"><i class="fa-solid fa-check-double"></i>All Present</button>
           <button class="btn btn-o btn-sm" onclick="clearDay()"><i class="fa-solid fa-eraser"></i>Clear</button>
         </div>
@@ -574,6 +687,7 @@ tr.rsun td{background:var(--sut)!important;}
             <div style="display:flex;gap:7px;">
               <button class="btn btn-o btn-sm" onclick="toggleQE()"><i class="fa-solid fa-bolt" style="color:var(--amb);"></i>Quick</button>
               <button class="btn btn-p btn-sm" onclick="addLedRow()"><i class="fa-solid fa-plus"></i>Add Row</button>
+              <button class="btn btn-s btn-sm" onclick="approveAllExp()" title="Approve all expenses this month"><i class="fa-solid fa-check-double"></i>Approve All</button>
               <button class="btn btn-o btn-sm" onclick="submitBatch()"><i class="fa-solid fa-paper-plane"></i>Submit</button>
             </div>
           </div>
@@ -600,7 +714,30 @@ tr.rsun td{background:var(--sut)!important;}
 
     <!-- TAGS -->
     <div class="page" id="page-tags">
-      <div class="ph"><div><h1>Tags &amp; Analytics</h1><p>Spend by tag, VAT summary, trends</p></div><div class="ps"><select id="tagsStaff" onchange="renderTags()"><option value="All">All Staff</option></select><select id="tagsMonth" onchange="renderTags()"></select><select id="tagsYear" onchange="renderTags()"></select></div></div>
+      <div class="ph" style="flex-wrap:wrap;gap:9px;">
+        <div><h1>Tags &amp; Analytics</h1><p>Spend by tag, VAT summary</p></div>
+        <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;">
+          <select id="tagsStaff" onchange="renderTags()" style="padding:6px 10px;border:1px solid var(--bdr);border-radius:var(--rs);font-size:13px;color:var(--txt);background:var(--card);font-family:inherit;outline:none;"><option value="All">All Staff</option></select>
+          <div class="nav-pills">
+            <div class="np-seg">
+              <button class="np-seg-btn" onclick="shiftTags(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+              <div class="np-seg-div"></div>
+              <span class="np-seg-label" id="tagsDisp_m" style="min-width:72px;">June</span>
+              <div class="np-seg-div"></div>
+              <button class="np-seg-btn" onclick="shiftTags(1)"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+            <div class="np-seg">
+              <button class="np-seg-btn" onclick="shiftTags(-12)"><i class="fa-solid fa-chevron-left"></i></button>
+              <div class="np-seg-div"></div>
+              <span class="np-seg-label narrow" id="tagsDisp_y" style="min-width:52px;">2026</span>
+              <div class="np-seg-div"></div>
+              <button class="np-seg-btn" onclick="shiftTags(12)"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+          </div>
+          <button class="btn btn-p btn-sm" onclick="addTagPrompt()"><i class="fa-solid fa-plus"></i>New Tag</button>
+        </div>
+      </div>
+      <select id="tagsMonth" style="display:none;"></select><select id="tagsYear" style="display:none;"></select>
       <div class="cr cr4" id="tagStats"></div>
       <div class="cr cr2"><div class="card"><div class="ch"><div class="ct">Spend by Tag</div></div><div class="cb" id="tagBreakdown"></div></div><div class="card"><div class="ch"><div class="ct">VAT Summary</div></div><div class="cb" id="vatSummary"></div></div></div>
       <div class="card" style="margin-top:13px;"><div class="ch"><div class="ct">Manage Tags</div></div><div class="cb" id="tagsMgmt"></div></div>
@@ -608,21 +745,81 @@ tr.rsun td{background:var(--sut)!important;}
 
     <!-- MONTHLY VIEW -->
     <div class="page" id="page-monthly">
-      <div class="ph"><div><h1>Monthly View</h1><p>Full month grid</p></div><div class="ps"><select id="mvMonth" onchange="renderMonthly()"></select><select id="mvYear" onchange="renderMonthly()"></select><button class="btn btn-o btn-sm" onclick="window.print()"><i class="fa-solid fa-print"></i>Print</button></div></div>
+      <div class="ph">
+        <div><h1>Monthly View</h1><p>Full month grid</p></div>
+        <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;">
+          <div class="nav-pills">
+            <div class="np-seg">
+              <button class="np-seg-btn" onclick="shiftMonthly(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+              <div class="np-seg-div"></div>
+              <span class="np-seg-label" id="mvDisp_m" style="min-width:72px;">June</span>
+              <div class="np-seg-div"></div>
+              <button class="np-seg-btn" onclick="shiftMonthly(1)"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+            <div class="np-seg">
+              <button class="np-seg-btn" onclick="shiftMonthly(-12)"><i class="fa-solid fa-chevron-left"></i></button>
+              <div class="np-seg-div"></div>
+              <span class="np-seg-label narrow" id="mvDisp_y" style="min-width:52px;">2026</span>
+              <div class="np-seg-div"></div>
+              <button class="np-seg-btn" onclick="shiftMonthly(12)"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+          </div>
+          <button class="btn btn-o btn-sm" onclick="window.print()"><i class="fa-solid fa-print"></i>Print</button>
+        </div>
+      </div>
+      <select id="mvMonth" style="display:none;"></select><select id="mvYear" style="display:none;"></select>
       <div class="card"><div style="overflow-x:auto;"><table class="mg" id="mvTable"></table></div></div>
     </div>
 
     <!-- DAILY VIEW -->
     <div class="page" id="page-daily">
       <div class="ph"><div><h1>Daily View</h1><p id="dvSub"></p></div></div>
-      <div class="dn"><button class="dn-btn" onclick="shiftDaily(-1)"><i class="fa-solid fa-chevron-left"></i></button><button class="dn-today" onclick="setDailyToday()">Today</button><span class="dd" id="dvDisp"></span><span id="dvDay" style="font-size:12px;color:var(--txt2);font-weight:600;white-space:nowrap;"></span><button class="dn-btn" onclick="shiftDaily(1)"><i class="fa-solid fa-chevron-right"></i></button><input type="date" id="dvPicker" style="padding:4px 8px;border:1px solid var(--bdr);border-radius:6px;font-size:12px;background:var(--card);color:var(--txt);outline:none;" onchange="setDailyDate(this.value)"><button class="btn btn-o btn-sm" style="margin-left:auto;" onclick="jumpToMark(dateKey(dailyDate))" id="dvEditBtn"><i class="fa-solid fa-pen-to-square"></i>Edit</button></div>
+      <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:14px;padding:10px 14px;background:var(--card);border:1px solid var(--bdr);border-radius:var(--r);box-shadow:var(--sh);">
+        <div class="nav-pills">
+          <button class="np-today" onclick="setDailyToday()"><i class="fa-solid fa-circle-dot"></i>Today</button>
+          <div class="np-seg">
+            <button class="np-seg-btn" onclick="shiftDaily(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+            <div class="np-seg-div"></div>
+            <span class="np-seg-label wide" id="dvDisp">—</span>
+            <div class="np-seg-div"></div>
+            <button class="np-seg-btn" onclick="shiftDaily(1)"><i class="fa-solid fa-chevron-right"></i></button>
+          </div>
+          <input type="date" id="dvPicker" style="opacity:0;width:0;height:0;position:absolute;" onchange="setDailyDate(this.value)">
+          <button class="np-cal" onclick="document.getElementById('dvPicker').showPicker?document.getElementById('dvPicker').showPicker():document.getElementById('dvPicker').click()"><i class="fa-solid fa-calendar-days"></i></button>
+        </div>
+        <button class="btn btn-o btn-sm" style="margin-left:auto;" onclick="jumpToMark(dateKey(dailyDate))" id="dvEditBtn"><i class="fa-solid fa-pen-to-square"></i>Edit</button>
+      </div>
       <div class="cr cr4" id="dvStats"></div>
       <div class="card"><div class="ch"><div class="ct" id="dvTitle">Records</div></div><div class="ts" id="dvTable"></div></div>
     </div>
 
     <!-- EMPLOYEE REPORT -->
     <div class="page" id="page-emp-report">
-      <div class="ph"><div><h1>Employee Report</h1><p>Attendance + pay estimate · printable timesheet</p></div><div class="ps"><select id="erEmp" onchange="renderEmpReport()"></select><select id="erMonth" onchange="renderEmpReport()"></select><select id="erYear" onchange="renderEmpReport()"></select><button class="btn btn-o btn-sm no-print" onclick="window.print()"><i class="fa-solid fa-print"></i>Print</button><button class="btn btn-t btn-sm no-print" onclick="printTimesheet()"><i class="fa-solid fa-file-lines"></i>Timesheet</button></div></div>
+      <div class="ph" style="flex-wrap:wrap;gap:9px;">
+        <div><h1>Employee Report</h1><p>Attendance + pay estimate · printable timesheet</p></div>
+        <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;">
+          <select id="erEmp" onchange="renderEmpReport()" style="padding:6px 10px;border:1px solid var(--bdr);border-radius:var(--rs);font-size:13px;color:var(--txt);background:var(--card);font-family:inherit;outline:none;"></select>
+          <div class="nav-pills">
+            <div class="np-seg">
+              <button class="np-seg-btn" onclick="shiftEmpReport(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+              <div class="np-seg-div"></div>
+              <span class="np-seg-label" id="erDisp_m" style="min-width:72px;">June</span>
+              <div class="np-seg-div"></div>
+              <button class="np-seg-btn" onclick="shiftEmpReport(1)"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+            <div class="np-seg">
+              <button class="np-seg-btn" onclick="shiftEmpReport(-12)"><i class="fa-solid fa-chevron-left"></i></button>
+              <div class="np-seg-div"></div>
+              <span class="np-seg-label narrow" id="erDisp_y" style="min-width:52px;">2026</span>
+              <div class="np-seg-div"></div>
+              <button class="np-seg-btn" onclick="shiftEmpReport(12)"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+          </div>
+          <button class="btn btn-o btn-sm no-print" onclick="window.print()"><i class="fa-solid fa-print"></i>Print</button>
+          <button class="btn btn-t btn-sm no-print" onclick="printTimesheet()"><i class="fa-solid fa-file-lines"></i>Timesheet</button>
+        </div>
+      </div>
+      <select id="erMonth" style="display:none;"></select><select id="erYear" style="display:none;"></select>
       <div class="cr cr4" id="erStats"></div>
       <div class="card" id="erSunCard" style="margin-bottom:13px;display:none;"><div class="ch"><div class="ct"><i class="fa-solid fa-sun" style="color:#4338ca;margin-right:5px;"></i>Sundays Worked</div></div><div class="cb" id="erSunList"></div></div>
       <div class="card"><div class="ch"><div class="ct">Daily Records</div></div><div class="ts" id="erTable"></div></div>
@@ -631,7 +828,16 @@ tr.rsun td{background:var(--sut)!important;}
 
     <!-- YEARLY SUMMARY -->
     <div class="page" id="page-yearly">
-      <div class="ph"><div><h1>Yearly Summary</h1><p>Annual attendance &amp; pay</p></div><div style="display:flex;align-items:center;gap:7px;"><button class="dn-btn" onclick="shiftYear(-1)"><i class="fa-solid fa-chevron-left"></i></button><select id="yrSel" onchange="renderYearly()" style="font-size:14px;font-weight:700;padding:5px 10px;border:1px solid var(--bdr);border-radius:var(--rs);background:var(--card);color:var(--txt);font-family:inherit;outline:none;"></select><button class="dn-btn" onclick="shiftYear(1)"><i class="fa-solid fa-chevron-right"></i></button></div></div>
+      <div class="ph"><div><h1>Yearly Summary</h1><p>Annual attendance &amp; pay</p></div><div style="display:flex;align-items:center;gap:7px;"><div class="nav-pills">
+          <div class="np-seg">
+            <button class="np-seg-btn" onclick="shiftYear(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+            <div class="np-seg-div"></div>
+            <span class="np-seg-label narrow" id="yrDisp" style="min-width:56px;">—</span>
+            <div class="np-seg-div"></div>
+            <button class="np-seg-btn" onclick="shiftYear(1)"><i class="fa-solid fa-chevron-right"></i></button>
+          </div>
+        </div>
+        <select id="yrSel" style="display:none;"></select></div></div>
       <div class="card"><div class="ts" id="yrTable"></div></div>
     </div>
 
@@ -644,7 +850,23 @@ tr.rsun td{background:var(--sut)!important;}
 
     <!-- PAYROLL -->
     <div class="page" id="page-payroll">
-      <div class="ph"><div><h1>Payroll</h1><p>Base + OT + bonus + expenses auto-pulled · bank/cash split</p></div><div class="ps"><button class="dn-btn" onclick="shiftPayroll(-1)"><i class="fa-solid fa-chevron-left"></i></button><select id="prMonth" onchange="renderPayroll()"></select><select id="prYear" onchange="renderPayroll()"></select><button class="dn-btn" onclick="shiftPayroll(1)"><i class="fa-solid fa-chevron-right"></i></button><button class="btn btn-s btn-sm" onclick="exportPayrollCSV()"><i class="fa-solid fa-file-csv"></i>CSV</button><button class="btn btn-o btn-sm" onclick="window.print()"><i class="fa-solid fa-print"></i>Print</button><button class="btn btn-o btn-sm" id="lockBtn" onclick="togglePayrollLock()"><i class="fa-solid fa-lock"></i>Lock</button></div></div>
+      <div class="ph"><div><h1>Payroll</h1><p>Base + OT + bonus + expenses auto-pulled · bank/cash split</p></div><div class="ps"><div class="nav-pills">
+            <div class="np-seg">
+              <button class="np-seg-btn" onclick="shiftPayroll(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+              <div class="np-seg-div"></div>
+              <span class="np-seg-label" id="prDisp_m" style="min-width:72px;">—</span>
+              <div class="np-seg-div"></div>
+              <button class="np-seg-btn" onclick="shiftPayroll(1)"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+            <div class="np-seg">
+              <button class="np-seg-btn" onclick="shiftPayroll(-12)"><i class="fa-solid fa-chevron-left"></i></button>
+              <div class="np-seg-div"></div>
+              <span class="np-seg-label narrow" id="prDisp_y" style="min-width:52px;">—</span>
+              <div class="np-seg-div"></div>
+              <button class="np-seg-btn" onclick="shiftPayroll(12)"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+          </div>
+          <select id="prMonth" style="display:none;"></select><select id="prYear" style="display:none;"></select><button class="btn btn-s btn-sm" onclick="exportPayrollCSV()"><i class="fa-solid fa-file-csv"></i>CSV</button><button class="btn btn-o btn-sm" onclick="window.print()"><i class="fa-solid fa-print"></i>Print</button><button class="btn btn-o btn-sm" id="lockBtn" onclick="togglePayrollLock()"><i class="fa-solid fa-lock"></i>Lock</button></div></div>
       <div id="prLockBanner" style="display:none;" class="lkd-b"><i class="fa-solid fa-lock"></i><span id="prLockTxt">Locked</span></div>
       <div class="cr cr4" id="prStats"></div>
       <div class="card"><div class="ch"><div class="ct" id="prTitle">Payroll</div><div class="cs">Expenses auto-pulled from ledger · OT & bonus per day</div></div><div class="ts" id="prTable"></div></div>
@@ -662,8 +884,14 @@ tr.rsun td{background:var(--sut)!important;}
     <div class="page" id="page-messages">
       <div class="ph"><div><h1>Messages</h1><p>Communicate with employees</p></div></div>
       <div class="cr cr2">
-        <div class="card"><div class="ch"><div class="ct">Select Employee</div></div><div class="cb"><select id="msgEmpSel" onchange="loadMessages(this.value)" style="width:100%;padding:8px;border:1px solid var(--bdr);border-radius:var(--rs);font-size:13px;color:var(--txt);background:var(--card);font-family:inherit;outline:none;"><option value="">— Choose employee —</option></select></div></div>
-        <div class="card"><div class="ch"><div class="ct" id="msgTitle">Messages</div></div><div class="cb"><div class="message-area"><div class="msg-list" id="msgList"><div class="es" style="padding:20px;"><i class="fa-solid fa-comments"></i><h3>Select an employee</h3></div></div><div class="msg-input-row"><input class="msg-input" id="msgInput" placeholder="Type message..." onkeydown="if(event.key==='Enter')sendMsg()"><button class="btn btn-p btn-sm" onclick="sendMsg()"><i class="fa-solid fa-paper-plane"></i></button></div></div></div></div>
+        <div class="card"><div class="ch"><div class="ct">Select Employee</div></div><div class="cb"><select id="msgEmpSel" onchange="loadMessages(this.value)" style="width:100%;padding:8px;border:1px solid var(--bdr);border-radius:var(--rs);font-size:13px;color:var(--txt);background:var(--card);font-family:inherit;outline:none;"><option value="">— Choose employee —</option></select></div>
+          <div class="cb" id="msgEmpList" style="max-height:300px;overflow-y:auto;"></div>
+        </div>
+        <div class="card"><div class="ch"><div class="ct" id="msgTitle">Messages</div>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-d btn-sm" id="clearChatBtn" style="display:none;" onclick="clearChat()"><i class="fa-solid fa-trash"></i>Clear Chat</button>
+          </div>
+        </div><div class="cb"><div class="message-area"><div class="msg-list" id="msgList"><div class="es" style="padding:20px;"><i class="fa-solid fa-comments"></i><h3>Select an employee</h3></div></div><div class="msg-input-row"><input class="msg-input" id="msgInput" placeholder="Type message..." onkeydown="if(event.key==='Enter')sendMsg()"><button class="btn btn-p btn-sm" onclick="sendMsg()"><i class="fa-solid fa-paper-plane"></i></button></div></div></div></div>
       </div>
     </div>
 
@@ -676,14 +904,47 @@ tr.rsun td{background:var(--sut)!important;}
     <!-- SETTINGS -->
     <div class="page" id="page-settings">
       <div class="ph"><div><h1>Settings &amp; Tools</h1></div><button class="btn btn-p" onclick="saveSettings()"><i class="fa-solid fa-floppy-disk"></i>Save</button></div>
-      <div class="tabs"><div class="tab active" onclick="setSettTab('general',this)">General</div><div class="tab" onclick="setSettTab('att',this)">Attendance</div><div class="tab" onclick="setSettTab('pay',this)">Pay</div><div class="tab" onclick="setSettTab('exp',this)">Expenses</div><div class="tab" onclick="setSettTab('admin',this)">Admin PIN</div></div>
+      <div class="tabs"><div class="tab active" onclick="setSettTab('general',this)">General</div><div class="tab" onclick="setSettTab('att',this)">Attendance</div><div class="tab" onclick="setSettTab('pay',this)">Pay</div><div class="tab" onclick="setSettTab('exp',this)">Expenses</div><div class="tab" onclick="setSettTab('admin',this)">Admin PIN</div><div class="tab" onclick="setSettTab('data',this)"><i class="fa-solid fa-database" style="margin-right:4px;"></i>Data</div></div>
       <div class="sett-sec active" id="settTab-general"><div class="card"><div class="cb"><div class="fg fg2"><div class="fgl" style="grid-column:1/-1"><label>Company Name</label><input type="text" id="sCompany" placeholder="OHM Electrical"></div><div class="fgl"><label>Currency</label><select id="sCurrency"><option value="£">£ GBP</option><option value="$">$ USD</option><option value="€">€ EUR</option></select></div><div class="fgl"><label>Attendance Warning %</label><input type="number" id="sThreshold" min="0" max="100" placeholder="80"></div></div></div></div></div>
       <div class="sett-sec" id="settTab-att"><div class="card"><div class="cb"><div class="fg fg2"><div class="fgl"><label>Default Work Start</label><input type="time" id="sWStart" value="08:00"></div><div class="fgl"><label>Default Work End</label><input type="time" id="sWEnd" value="17:00"></div><div class="fgl"><label>OT After (hours/day)</label><input type="number" id="sOT" min="1" max="24" step="0.5" placeholder="8"></div></div></div></div>
         <div class="card" style="margin-top:13px;"><div class="ch"><div class="ct">Bank Account Names</div></div><div class="cb"><div id="bankList" style="display:flex;flex-direction:column;gap:7px;margin-bottom:11px;"></div><div style="display:flex;gap:7px;"><input type="text" id="newBank" placeholder="e.g. GB Electrical" style="flex:1;padding:7px 10px;border:1px solid var(--bdr);border-radius:var(--rs);font-size:13px;color:var(--txt);background:var(--card);font-family:inherit;outline:none;"><button class="btn btn-p btn-sm" onclick="addBank()"><i class="fa-solid fa-plus"></i>Add</button></div></div></div>
       </div>
       <div class="sett-sec" id="settTab-pay"><div class="card"><div class="cb"><div class="fg fg3"><div class="fgl"><label>Default OT Multiplier</label><input type="number" id="sOTMult" min="1" max="5" step="0.1" placeholder="1.5"></div><div class="fgl"><label>Saturday ×</label><input type="number" id="sSat" min="1" max="5" step="0.1" placeholder="1.0"></div><div class="fgl"><label>Sunday ×</label><input type="number" id="sSun" min="1" max="5" step="0.1" placeholder="1.0"></div></div><p style="font-size:12px;color:var(--txtm);margin-top:9px;">Each employee can override in their profile.</p></div></div></div>
       <div class="sett-sec" id="settTab-exp"><div class="card"><div class="ch"><div class="ct">Default Categories</div></div><div class="cb"><div id="catList" style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:11px;"></div><div style="display:flex;gap:7px;"><input type="text" id="newCat" placeholder="e.g. Fuel" style="flex:1;padding:7px 10px;border:1px solid var(--bdr);border-radius:var(--rs);font-size:13px;color:var(--txt);background:var(--card);font-family:inherit;outline:none;"><button class="btn btn-p btn-sm" onclick="addCat()"><i class="fa-solid fa-plus"></i>Add</button></div></div></div></div>
-      <div class="sett-sec" id="settTab-admin"><div class="card"><div class="cb"><div class="fg fg2"><div class="fgl"><label>New Admin PIN (4-6 digits)</label><input type="password" id="newPin" placeholder="••••" maxlength="6"></div><div class="fgl"><label>Confirm PIN</label><input type="password" id="confirmPin" placeholder="••••" maxlength="6"></div></div><button class="btn btn-p" style="margin-top:11px;" onclick="changePin()"><i class="fa-solid fa-key"></i>Update PIN</button><p style="font-size:12px;color:var(--txtm);margin-top:8px;">Default PIN: 1234 — change this immediately.</p></div></div></div>
+      <div class="sett-sec" id="settTab-admin"><div class="card"><div class="cb"><div class="fg fg2"><div class="fgl"><label>New Admin PIN (4-6 digits)</label><input type="password" id="newPin" placeholder="••••" maxlength="6"></div><div class="fgl"><label>Confirm PIN</label><input type="password" id="confirmPin" placeholder="••••" maxlength="6"></div></div><button class="btn btn-p" style="margin-top:11px;" onclick="changePin()"><i class="fa-solid fa-key"></i>Update PIN</button><p style="font-size:12px;color:var(--txtm);margin-top:8px;">Default PIN: 1234 — change this immediately.</p></div></div>
+
+      <div class="sett-sec" id="settTab-data">
+        <!-- EXPORT -->
+        <div class="card" style="margin-bottom:14px;">
+          <div class="ch"><div class="ct"><i class="fa-solid fa-upload" style="color:var(--grn);margin-right:6px;"></i>Export All Data</div></div>
+          <div class="cb">
+            <p style="font-size:13px;color:var(--txt2);margin-bottom:14px;">Download a complete backup of all your data as a JSON file. Use this before moving to a new Supabase project.</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;">
+              <button class="btn btn-s" onclick="exportAllData('json')"><i class="fa-solid fa-file-code"></i>Export JSON</button>
+              <button class="btn btn-o" onclick="exportAllData('csv')"><i class="fa-solid fa-file-csv"></i>Export CSV (expenses)</button>
+            </div>
+            <div id="exportStatus" style="margin-top:11px;font-size:12px;color:var(--txtm);"></div>
+          </div>
+        </div>
+        <!-- IMPORT -->
+        <div class="card">
+          <div class="ch"><div class="ct"><i class="fa-solid fa-download" style="color:var(--acc);margin-right:6px;"></i>Import Data</div></div>
+          <div class="cb">
+            <p style="font-size:13px;color:var(--txt2);margin-bottom:6px;">Import a JSON backup file into this Supabase project. This will <strong>add</strong> records — it won't delete existing data.</p>
+            <div style="background:var(--ambl);border:1px solid rgba(217,119,6,0.2);border-radius:var(--rs);padding:9px 12px;margin-bottom:13px;font-size:12px;color:var(--amb);">
+              <i class="fa-solid fa-triangle-exclamation" style="margin-right:5px;"></i>Only import into a <strong>fresh empty project</strong> to avoid duplicate data.
+            </div>
+            <div style="border:2px dashed var(--bdr);border-radius:var(--r);padding:20px;text-align:center;cursor:pointer;background:var(--card2);margin-bottom:11px;" onclick="document.getElementById('importFile').click()" id="importDropZone">
+              <i class="fa-solid fa-file-arrow-up" style="font-size:24px;color:var(--txtm);display:block;margin-bottom:8px;"></i>
+              <div style="font-size:13px;font-weight:600;">Click to choose JSON backup file</div>
+              <div style="font-size:11px;color:var(--txtm);margin-top:3px;" id="importFileName">No file selected</div>
+            </div>
+            <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importFileChosen(this)">
+            <button class="btn btn-p" onclick="importAllData()" id="importBtn" disabled style="opacity:0.5;"><i class="fa-solid fa-database"></i>Import into Supabase</button>
+            <div id="importStatus" style="margin-top:11px;font-size:12px;"></div>
+          </div>
+        </div>
+      </div>
     </div>
 
   </div><!-- end content -->
@@ -715,6 +976,7 @@ tr.rsun td{background:var(--sut)!important;}
           <div class="ptc" id="pt-hourly" onclick="selPayType('hourly')"><div class="ptc-ico">🕐</div><div class="ptc-lbl">Hourly Rate</div><div class="ptc-sub">Rate × hours</div></div>
         </div>
       </div>
+
       <div id="pf-fixed">
         <div class="ibox"><i class="fa-solid fa-circle-info"></i>Monthly salary paid regardless of hours. OT hours above contracted hours paid at OT rate.</div>
         <div class="fg fg2"><div class="fgl"><label>Monthly Salary (£)</label><input type="number" id="eSalary" min="0" step="50" placeholder="e.g. 2500"></div><div class="fgl"><label>Contracted Hours/Day</label><input type="number" id="eContHrs" min="1" max="16" step="0.5" placeholder="e.g. 8"></div></div>
@@ -739,6 +1001,9 @@ tr.rsun td{background:var(--sut)!important;}
         <div style="font-size:12px;font-weight:600;color:var(--txt2);margin-bottom:9px;"><i class="fa-solid fa-building-columns" style="color:var(--tel);margin-right:5px;"></i>Payment Split</div>
         <div class="fg fg2"><div class="fgl"><label>Monthly Bank Transfer (£)</label><input type="number" id="eBankAmt" min="0" step="10" placeholder="e.g. 700"></div><div class="fgl"><label>Bank Account</label><select id="eBankName"></select></div><div class="fgl" id="customBankG" style="display:none;grid-column:1/-1"><label>Custom Bank Name</label><input type="text" id="eBankCustom"></div></div>
       </div>
+      <input type="hidden" id="eSalaryFrom">
+      <input type="hidden" id="eSalaryAdj">
+      <input type="hidden" id="eDailyFrom">
     </div>
     <div class="mo-sec" id="empTab-hours">
       <div class="ibox"><i class="fa-solid fa-circle-info"></i>Default times auto-fill on Mark Attendance page.</div>
@@ -906,7 +1171,8 @@ if(window.location.protocol==='file:'){
 // ═══════════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════════
-let employees=[], attendance=[], expenses=[], batches=[], messages=[], cfg={};
+let employees=[], attendance=[], expenses=[], batches=[], messages=[], cfg={}, attRequests=[];
+let paymentStatuses={};
 let currentPage='dashboard';
 let employeeDocuments=[];
 let salaryHistory=[]; // salary_history rows from DB // all docs loaded
@@ -1088,13 +1354,15 @@ async function loadAllData(){
     messages=msgR.data||[];
 
     // Optional tables - fail gracefully if not created yet
-    const [docR,salR,payR]=await Promise.all([
+    const [docR,salR,payR,attReqR]=await Promise.all([
       sb.from('employee_documents').select('*').order('uploaded_at',{ascending:false}),
       sb.from('salary_history').select('*').order('effective_from',{ascending:false}),
-      sb.from('payment_status').select('*')
+      sb.from('payment_status').select('*'),
+      sb.from('attendance_requests').select('*').order('created_at',{ascending:false})
     ]);
     employeeDocuments=docR.error?[]:docR.data||[];
     salaryHistory=salR.error?[]:salR.data||[];
+    attRequests=attReqR.error?[]:attReqR.data||[];
     // Pre-load payment statuses into cache
     if(!payR.error)(payR.data||[]).forEach(row=>{
       paymentStatuses[`${row.employee_id}_${row.month}_${row.year}`]={
@@ -1176,9 +1444,10 @@ function navigate(page){
   else if(page==='search'){setTimeout(()=>document.getElementById('srchInput')?.focus(),80);}
   else if(page==='payroll')renderPayroll();
   else if(page==='employees')renderEmployees();
-  else if(page==='messages')populateMsgSel();
+  else if(page==='messages'){populateMsgSel();populateMsgEmpList();}
   else if(page==='flags')renderFlags();
   else if(page==='settings')loadSettings();
+  else if(page==='att-requests')renderAttRequests();
 }
 document.querySelectorAll('.nav-item[data-page]').forEach(el=>el.addEventListener('click',()=>navigate(el.dataset.page)));
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('col');}
@@ -1188,6 +1457,8 @@ function handleSearch(q){if(q.trim().length>1){navigate('search');setTimeout(()=
 function updateBadges(){
   const pend=batches.filter(b=>b.status==='pending').length;
   const ab=document.getElementById('aprBadge');if(ab){ab.textContent=pend;ab.style.display=pend>0?'':'none';}
+  const pendReqs=(attRequests||[]).filter(r=>r.status==='pending').length;
+  const arb=document.getElementById('attReqBadge');if(arb){arb.textContent=pendReqs;arb.style.display=pendReqs>0?'':'none';}
   const unread=messages.filter(m=>!m.read&&m.sender!=='office').length;
   const mb=document.getElementById('msgBadge');if(mb){mb.textContent=unread;mb.style.display=unread>0?'':'none';}
   const flags=expenses.filter(e=>e.flagged).length;
@@ -1200,7 +1471,14 @@ function updateBadges(){
 function initSelectors(){
   populateMY('dashMonth','dashYear');populateMY('erMonth','erYear');
   populateMY('prMonth','prYear');populateMY('tagsMonth','tagsYear');
+  populateMY('mvMonth','mvYear'); // monthly view hidden selects
   populateYr('yrSel');populateYr('tagsYear');
+  // Init nav pill displays
+  const now=new Date();const nm=MONTHS[now.getMonth()],ny=now.getFullYear();
+  [['mvDisp','erDisp','tagsDisp','dashDisp','prDisp']].flat().forEach(id=>{
+    const em=document.getElementById(id+'_m'),ey=document.getElementById(id+'_y');
+    if(em)em.textContent=nm;if(ey)ey.textContent=ny;
+  });
   // Staff in ledger/tags/dashboard
   ['dashStaff','tagsStaff'].forEach(id=>{
     const s=document.getElementById(id);if(!s)return;
@@ -1233,159 +1511,335 @@ function populateEmpSel(id){
 // ═══════════════════════════════════════════════════
 // DASHBOARD
 // ═══════════════════════════════════════════════════
+function shiftDash(n){
+  const m=document.getElementById('dashMonth'),y=document.getElementById('dashYear');
+  let mo=parseInt(m.value)+n,yr=parseInt(y.value);
+  if(mo<0){mo=11;yr--;}else if(mo>11){mo=0;yr++;}
+  m.value=mo;y.value=yr;
+  const dm=document.getElementById('dashDisp_m'),dy=document.getElementById('dashDisp_y');
+  if(dm)dm.textContent=MONTHS[mo];if(dy)dy.textContent=yr;
+  renderDashboard();
+}
+
 function renderDashboard(){
+  if(!employees||employees.length===0){
+    // Data not loaded yet - show loading state
+    const g=document.getElementById('dashGrid');
+    const k=document.getElementById('kpiRow');
+    if(g)g.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--txtm);"><i class="fa-solid fa-rotate fa-spin" style="font-size:28px;margin-bottom:12px;display:block;"></i>Loading dashboard...</div>';
+    if(k)k.innerHTML='';
+    return;
+  }
   const now=new Date();
-  document.getElementById('dashDate').textContent=now.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  if(document.getElementById('todayDate2'))document.getElementById('todayDate2').textContent=now.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
+
   const month=parseInt(document.getElementById('dashMonth')?.value??now.getMonth());
   const year=parseInt(document.getElementById('dashYear')?.value??now.getFullYear());
   const staffF=document.getElementById('dashStaff')?.value||'All';
+  const C=cur();
+
+  // Update display
+  const dashDm=document.getElementById('dashDisp_m'),dashDy=document.getElementById('dashDisp_y');
+  if(dashDm)dashDm.textContent=MONTHS[month];if(dashDy)dashDy.textContent=year;
+  document.getElementById('dashDate').textContent=now.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+  // Populate staff selector (only on first load)
+  const dss=document.getElementById('dashStaff');
+  if(dss&&dss.options.length<=1){employees.forEach(e=>{dss.appendChild(new Option(e.name,e.id));});}
+
   const emps=employees.filter(e=>e.status==='Active');
   const todayKey=dateKey(now);
   const todayRecs=attendance.filter(r=>r.date===todayKey);
   const days=dim(year,month);
-  const wDays=Array.from({length:days},(_,i)=>isWD(new Date(year,month,i+1))).filter(Boolean).length;
+  const wDays=Array.from({length:days},(_,i)=>new Date(year,month,i+1).getDay()!==0).filter(Boolean).length;
   const mRecs=attendance.filter(r=>{const d=new Date(r.date+'T00:00:00');return d.getMonth()===month&&d.getFullYear()===year;});
+  const mStr=String(month+1).padStart(2,'0');
   const presentToday=todayRecs.filter(r=>isP(r.status)).length;
   const absentToday=todayRecs.filter(r=>r.status==='A').length;
   const leaveToday=todayRecs.filter(r=>['L','S','H','UL'].includes(r.status)).length;
   const monthHrs=mRecs.reduce((s,r)=>s+(parseFloat(r.hours)||0),0);
-  const mStr=String(month+1).padStart(2,'0');
   const mExpenses=expenses.filter(r=>{const d=new Date(r.date+'T00:00:00');return d.getMonth()===month&&d.getFullYear()===year&&(staffF==='All'||r.employee_id===staffF);});
   const totalExp=mExpenses.reduce((s,r)=>s+(parseFloat(r.amount)||0),0);
   const vatTotal=mExpenses.filter(r=>r.tags?.includes('VAT')).reduce((s,r)=>s+(parseFloat(r.amount)||0),0);
   const pendingCount=batches.filter(b=>b.status==='pending').length;
-  let payrollEst=0;
+
+  // Payroll estimate
+  let payrollEst=0,baseTotal=0,otTotal=0,bonusTotal=0;
   emps.forEach(emp=>{
     const recs=mRecs.filter(r=>r.employee_id===emp.id&&isP(r.status));
-    if(emp.pay_type==='fixed')payrollEst+=parseFloat(emp.salary)||0;
-    else recs.forEach(r=>{payrollEst+=calcPay(emp,r).total;});
-    const empExp=expenses.filter(e=>e.employee_id===emp.id&&(()=>{const d=new Date(e.date+'T00:00:00');return d.getMonth()===month&&d.getFullYear()===year;})());
+    if(emp.pay_type==='fixed'){baseTotal+=parseFloat(emp.salary)||0;payrollEst+=parseFloat(emp.salary)||0;}
+    else recs.forEach(r=>{const p=calcPay(emp,r);baseTotal+=p.base;otTotal+=p.ot;payrollEst+=p.total;});
+    bonusTotal+=mRecs.filter(r=>r.employee_id===emp.id).reduce((s,r)=>s+(parseFloat(r.bonus)||0),0);
+    const empExp=expenses.filter(e=>{const d=new Date(e.date+'T00:00:00');return e.employee_id===emp.id&&d.getMonth()===month&&d.getFullYear()===year;});
     payrollEst+=empExp.reduce((s,e)=>s+(parseFloat(e.amount)||0),0);
   });
-  // Not marked
+
+  // Not marked today
   const markedIds=new Set(todayRecs.map(r=>r.employee_id));
   const notMarked=emps.filter(e=>!markedIds.has(e.id));
   const nmCard=document.getElementById('nmCard');
-  if(notMarked.length>0){
-    nmCard.style.display='';
-    document.getElementById('nmSub').textContent=`${notMarked.length} not yet logged today`;
-    document.getElementById('nmList').innerHTML=notMarked.map(e=>`<span class="nm-chip"><span class="ava" style="background:${avcol(e.id)};width:18px;height:18px;font-size:8px;margin-right:0;">${inits(e.name)}</span>${e.name}</span>`).join('');
-  }else nmCard.style.display='none';
-  // Build dashboard grid
-  const C=cur();
-  let grid=`
-    <div class="kpi hl" style="grid-column:span 1;">
-      <div class="kico w"><i class="fa-solid fa-wallet"></i></div>
-      <div><div class="klbl">Total Expenses</div><div class="kval">${C}${totalExp.toFixed(0)}</div></div>
-    </div>
-    <div class="kpi">
-      <div class="kico b"><i class="fa-solid fa-user-check"></i></div>
-      <div><div class="klbl">Present Today</div><div class="kval" style="color:var(--grn);">${presentToday}</div></div>
-      <div style="font-size:11px;color:var(--txtm);">of ${emps.length} active</div>
-    </div>
-    <div class="kpi">
-      <div class="kico a"><i class="fa-solid fa-sterling-sign"></i></div>
-      <div><div class="klbl">Est. Payroll</div><div class="kval" style="color:var(--amb);">${C}${payrollEst.toFixed(0)}</div></div>
-      <div style="font-size:11px;color:var(--txtm);">${MONTHS[month]} ${year}</div>
-    </div>
-    <div class="kpi">
-      <div class="kico v"><i class="fa-solid fa-check-circle"></i></div>
-      <div><div class="klbl">Pending Approvals</div><div class="kval" style="color:var(--pur);">${pendingCount}</div></div>
-    </div>
-    <div class="kpi">
-      <div class="kico g"><i class="fa-solid fa-clock"></i></div>
-      <div><div class="klbl">Month Hours</div><div class="kval">${monthHrs.toFixed(0)}</div></div>
-      <div style="font-size:11px;color:var(--txtm);">${MONTHS[month]} ${year}</div>
-    </div>
-    <div class="kpi">
-      <div style="background:var(--redl);color:var(--red);" class="kico"><i class="fa-solid fa-user-xmark"></i></div>
-      <div><div class="klbl">Absent Today</div><div class="kval" style="color:var(--red);">${absentToday}</div></div>
-    </div>
-    <div class="kpi">
-      <div class="kico" style="background:var(--tell);color:var(--tel);"><i class="fa-solid fa-tag"></i></div>
-      <div><div class="klbl">VAT Tagged</div><div class="kval" style="color:var(--tel);">${C}${vatTotal.toFixed(0)}</div></div>
-      <div style="font-size:11px;color:var(--txtm);">Est. VAT: ${C}${(vatTotal/6).toFixed(0)}</div>
-    </div>
-    <div class="kpi">
-      <div class="kico" style="background:var(--ambl);color:var(--amb);"><i class="fa-solid fa-umbrella-beach"></i></div>
-      <div><div class="klbl">On Leave</div><div class="kval" style="color:var(--amb);">${leaveToday}</div></div>
-    </div>`;
-  // Attendance trend
-  const bars=[];
-  for(let i=27;i>=0;i--){const d=new Date(now);d.setDate(d.getDate()-i);const key=dateKey(d);const pres=attendance.filter(r=>r.date===key&&isP(r.status)).length;const total=emps.length||1;const pct=Math.round(pres/total*100);const sun=isSun(d),sat=isSat(d);const col=sun?'#a5b4fc':sat?'#c4b5fd':pres===0?'var(--bdr)':pct>=80?'#16a34a':pct>=50?'#d97706':'#dc2626';const isT=key===dateKey(now);bars.push(`<div style="display:flex;flex-direction:column;align-items:center;gap:1px;flex:1;"><div style="font-size:8px;color:var(--txtm);height:11px;line-height:11px;">${pres>0?pres:''}</div><div style="width:100%;height:${Math.max(3,pct*0.2)}px;background:${col};border-radius:2px 2px 0 0;${isT?'outline:2px solid var(--acc);outline-offset:1px;':''}" title="${d.getDate()}/${d.getMonth()+1}: ${pres} present"></div><div style="font-size:7px;color:var(--txtm);height:11px;line-height:11px;">${d.getDate()}</div></div>`);}
-  // Attendance overview
-  let ovHtml='';emps.forEach(emp=>{const recs=mRecs.filter(r=>r.employee_id===emp.id);const pw=recs.filter(r=>isP(r.status)&&isWD(new Date(r.date+'T00:00:00'))).length;const pct=wDays>0?Math.round(pw/wDays*100):0;ovHtml+=`<div style="margin-bottom:8px;"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:2px;"><span style="font-weight:600;">${emp.name}</span><span style="color:var(--txtm);">${pct}% · ${pw}/${wDays}</span></div><div class="pb"><div class="pf ${pct>=80?'pf-g':pct>=60?'pf-a':'pf-r'}" style="width:${pct}%"></div></div></div>`;});
-  // Category breakdown
-  const catT={};mExpenses.forEach(r=>{const c=r.category||'Other';catT[c]=(catT[c]||0)+(parseFloat(r.amount)||0);});
-  const sortedCats=Object.entries(catT).sort((a,b)=>b[1]-a[1]);const maxCV=sortedCats[0]?.[1]||1;
-  let catHtml=sortedCats.slice(0,6).map(([c,v])=>`<div style="margin-bottom:7px;"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:2px;"><span style="font-weight:600;">${c}</span><span>${C}${v.toFixed(2)}</span></div><div class="pb"><div class="pf pf-g" style="width:${Math.round(v/maxCV*100)}%"></div></div></div>`).join('');
-  // Smart insights
-  const totalPD=mRecs.filter(r=>isP(r.status)&&isWD(new Date(r.date+'T00:00:00'))).length;
-  const cpd=totalPD>0?(payrollEst+totalExp)/totalPD:0;
-  const totalOT=mRecs.reduce((s,r)=>s+(parseFloat(r.overtime)||0),0);
-  const topEmp=emps.map(e=>({name:e.name,d:mRecs.filter(r=>r.employee_id===e.id&&isP(r.status)).length})).sort((a,b)=>b.d-a.d)[0];
-  const insHtml=`<div style="display:flex;flex-direction:column;gap:2px;">
-    ${[{l:'Cost per working day',v:`${C}${cpd.toFixed(2)}`,s:'payroll + expenses'},{l:'Total OT this month',v:`${totalOT.toFixed(1)}h`,s:'all employees'},{l:'Top attender',v:topEmp?.name||'—',s:topEmp?`${topEmp.d} days`:''},{l:'Pending approvals',v:pendingCount,s:'expense batches'}].map(i=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:0.5px solid var(--bdr);font-size:13px;"><span style="color:var(--txt2);">${i.l}</span><div style="text-align:right;"><div style="font-weight:700;">${i.v}</div><div style="font-size:10px;color:var(--txtm);">${i.s}</div></div></div>`).join('')}</div>`;
-  // Absence alerts
+  if(notMarked.length>0){nmCard.style.display='';document.getElementById('nmSub').textContent=`${notMarked.length} not yet logged`;document.getElementById('nmList').innerHTML=notMarked.map(e=>`<span class="nm-chip"><span class="ava" style="background:${avcol(e.id)};width:18px;height:18px;font-size:8px;margin-right:0;">${inits(e.name)}</span>${e.name}</span>`).join('');}
+  else nmCard.style.display='none';
+
+  // Alert banner
   const thr=cfg.threshold||80;
-  const warns=emps.filter(e=>{const recs=mRecs.filter(r=>r.employee_id===e.id);const pw=recs.filter(r=>isP(r.status)&&isWD(new Date(r.date+'T00:00:00'))).length;return wDays>0&&Math.round(pw/wDays*100)<thr;});
+  const warns=emps.filter(emp=>{const recs=mRecs.filter(r=>r.employee_id===emp.id);const pw=recs.filter(r=>isP(r.status)&&new Date(r.date+'T00:00:00').getDay()!==0).length;return wDays>0&&Math.round(pw/wDays*100)<thr;});
   const alertEl=document.getElementById('alertBanner');
-  if(warns.length>0)alertEl.innerHTML=`<div style="background:var(--ambl);border:1px solid var(--amb);border-left:4px solid var(--amb);border-radius:var(--r);padding:9px 13px;margin-bottom:14px;display:flex;align-items:center;gap:9px;"><i class="fa-solid fa-bell" style="color:var(--amb);"></i><span style="font-size:13px;font-weight:600;color:var(--amb);">${warns.length} employee${warns.length>1?'s':''} below ${thr}% attendance</span><button onclick="this.parentElement.remove()" style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--txtm);font-size:14px;"><i class="fa-solid fa-xmark"></i></button></div>`;
+  if(warns.length>0)alertEl.innerHTML=`<div style="background:var(--ambl);border:1px solid var(--amb);border-left:4px solid var(--amb);border-radius:var(--r);padding:9px 13px;margin-bottom:14px;display:flex;align-items:center;gap:9px;flex-wrap:wrap;"><i class="fa-solid fa-bell" style="color:var(--amb);"></i><span style="font-size:13px;font-weight:600;color:var(--amb);">${warns.length} employee${warns.length>1?'s':''} below ${thr}% attendance</span><button onclick="this.parentElement.remove()" style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--txtm);font-size:14px;"><i class="fa-solid fa-xmark"></i></button></div>`;
   else alertEl.innerHTML='';
-  grid+=`
-    <div class="cc s2">
-      <div class="cc-hd"><span class="cc-t"><i class="fa-solid fa-chart-line" style="color:var(--blu);margin-right:5px;"></i>4-Week Attendance Trend</span></div>
-      <div style="display:flex;align-items:flex-end;gap:2px;height:55px;padding-bottom:13px;">${bars.join('')}</div>
-      <div style="margin-top:12px;border-top:1px solid var(--bdr);padding-top:12px;">${ovHtml||'<p style="color:var(--txtm);font-size:13px;">No attendance data yet</p>'}</div>
-    </div>
-    <div class="cc s2">
-      <div class="cc-hd"><span class="cc-t"><i class="fa-solid fa-lightbulb" style="color:var(--amb);margin-right:5px;"></i>Smart Insights</span></div>
-      ${insHtml}
-    </div>
-    <div class="cc s2">
-      <div class="cc-hd"><span class="cc-t">Top Expense Categories</span><span class="cc-b">${MONTHS[month]} ${year}</span></div>
-      ${catHtml||'<p style="color:var(--txtm);font-size:13px;">No expense data yet</p>'}
-    </div>
-    <div class="cc s2">
-      <div class="cc-hd"><span class="cc-t"><i class="fa-solid fa-triangle-exclamation" style="color:var(--amb);margin-right:5px;"></i>Attendance Warnings</span><span class="cc-b">Below ${thr}%</span></div>
-      ${warns.length?`<div class="ts"><table><thead><tr><th>Employee</th><th>Days</th><th>Rate</th></tr></thead><tbody>${warns.map(e=>{const recs=mRecs.filter(r=>r.employee_id===e.id);const pw=recs.filter(r=>isP(r.status)&&isWD(new Date(r.date+'T00:00:00'))).length;const pct=wDays>0?Math.round(pw/wDays*100):0;return`<tr><td><span class="ava" style="background:${avcol(e.id)}">${inits(e.name)}</span>${e.name}</td><td>${pw}/${wDays}</td><td style="color:var(--red);font-weight:700;">${pct}%</td></tr>`;}).join('')}</tbody></table></div>`:'<p style="color:var(--txtm);font-size:13px;">All employees above threshold 🎉</p>'}
+
+  // ── 1. KPI CARDS ──────────────────────────────────────
+  const kpiData=[
+    {label:'Present Today',val:presentToday,sub:`of ${emps.length} active`,icon:'fa-user-check',color:'var(--grn)',bg:'var(--grnl)',click:"navigate('mark')"},
+    {label:'Absent Today',val:absentToday,sub:leaveToday>0?`${leaveToday} on leave`:'',icon:'fa-user-xmark',color:'var(--red)',bg:'var(--redl)',click:"navigate('daily')"},
+    {label:'Month Hours',val:monthHrs.toFixed(0)+'h',sub:`${MONTHS[month]} ${year}`,icon:'fa-clock',color:'var(--blu)',bg:'var(--blul)',click:"navigate('monthly')"},
+    {label:'OT Hours',val:mRecs.reduce((s,r)=>s+(parseFloat(r.overtime)||0),0).toFixed(1)+'h',sub:'overtime this month',icon:'fa-hourglass-half',color:'var(--amb)',bg:'var(--ambl)',click:"navigate('payroll')"},
+    {label:'Total Expenses',val:C+totalExp.toFixed(0),sub:`${MONTHS[month]} ${year}`,icon:'fa-receipt',color:'var(--tel)',bg:'var(--tell)',click:"navigate('ledger')"},
+    {label:'Est. Payroll',val:C+payrollEst.toFixed(0),sub:'base+OT+exp+bonus',icon:'fa-sterling-sign',color:'var(--pur)',bg:'var(--purl)',click:"navigate('payroll')"},
+    {label:'Pending Approvals',val:pendingCount,sub:'expense batches',icon:'fa-circle-check',color:'var(--amb)',bg:'var(--ambl)',click:"navigate('approvals')"},
+    {label:'VAT Tagged',val:C+vatTotal.toFixed(0),sub:`Est. reclaimable: ${C}${(vatTotal/6).toFixed(0)}`,icon:'fa-tag',color:'#0f766e',bg:'var(--tell)',click:"navigate('tags')"},
+  ];
+  document.getElementById('kpiRow').innerHTML=kpiData.map((k,i)=>`
+    <div onclick="${k.click}" style="background:var(--card);border:1px solid var(--bdr);border-radius:var(--rl);padding:16px 18px;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='var(--shm)';this.style.borderColor='${k.color}50'" onmouseout="this.style.transform='';this.style.boxShadow='';this.style.borderColor='var(--bdr)'">
+      <div style="position:absolute;top:12px;right:14px;width:36px;height:36px;border-radius:10px;background:${k.bg};display:flex;align-items:center;justify-content:center;"><i class="fa-solid ${k.icon}" style="color:${k.color};font-size:15px;"></i></div>
+      <div style="font-size:11px;font-weight:600;color:var(--txtm);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">${k.label}</div>
+      <div style="font-size:24px;font-weight:800;color:${k.color};line-height:1;margin-bottom:4px;">${k.val}</div>
+      <div style="font-size:11px;color:var(--txtm);">${k.sub}</div>
+    </div>`).join('');
+
+  // ── 2. TODAY'S TEAM (live presence list) ──────────────
+  const teamEmps=staffF==='All'?emps:[emps.find(e=>e.id===staffF)].filter(Boolean);
+  const presenceHtml=teamEmps.map(emp=>{
+    const rec=todayRecs.find(r=>r.employee_id===emp.id);
+    const st=rec?.status;
+    const stColor=st==='P'||st==='LA'||st==='HD'?'var(--grn)':st==='A'?'var(--red)':st?'var(--amb)':'var(--txtm)';
+    const stLabel=st?({'P':'Present','A':'Absent','L':'Annual Leave','S':'Sick','H':'Bank Holiday','HD':'Half Day','LA':'Late','UL':'Unpaid Leave'}[st]||st):'Not marked';
+    const timeStr=rec?.sign_in?`${rec.sign_in}${rec.sign_out?'–'+rec.sign_out:''}`:'';
+    return`<div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:0.5px solid var(--bdr);">
+      <span class="ava" style="background:${avcol(emp.id)};flex-shrink:0;">${inits(emp.name)}</span>
+      <div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${emp.name}</div><div style="font-size:11px;color:var(--txtm);">${emp.role||''}</div></div>
+      <div style="text-align:right;flex-shrink:0;"><div style="font-size:12px;font-weight:700;color:${stColor};">${stLabel}</div><div style="font-size:10px;color:var(--txtm);">${timeStr}</div></div>
     </div>`;
-  // Document expiry reminders
-  const urgentDocs=renderDocReminders();
-  if(urgentDocs.length>0){
-    const remHtml=urgentDocs.map(doc=>{
-      const emp=employees.find(e=>e.id===doc.employee_id);
-      const st=getDocStatus(doc);
-      // Match DOC_TYPES by doc_type value (handle both formats)
-      const dtKey=doc.doc_type||'Other';
-      const def=DOC_TYPES[dtKey]||Object.values(DOC_TYPES).find(d=>d)||{icon:'fa-file',color:'#64748b'};
-      const expired=st.status==='expired';
-      const expiring=st.status==='expiring';
-      return`<div onclick="openDocForEmp('${doc.employee_id}')" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:var(--r);margin-bottom:7px;cursor:pointer;background:${expired?'var(--redl)':expiring?'var(--ambl)':'var(--grnl)'};border:1px solid ${expired?'rgba(220,38,38,0.2)':expiring?'rgba(217,119,6,0.2)':'rgba(22,163,74,0.2)'};transition:all 0.2s;" onmouseover="this.style.filter='brightness(0.96)'" onmouseout="this.style.filter=''">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <div style="width:36px;height:36px;border-radius:9px;background:${expired?'rgba(220,38,38,0.15)':expiring?'rgba(217,119,6,0.15)':'rgba(22,163,74,0.15)'};color:${expired?'var(--red)':expiring?'var(--amb)':'var(--grn)'};display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;"><i class="fa-solid ${def.icon}"></i></div>
-          <div>
-            <div style="font-size:13px;font-weight:700;color:var(--txt);">${emp?.name||'?'} <span style="font-weight:400;color:var(--txtm);">·</span> ${doc.name}</div>
-            <div style="font-size:11px;color:var(--txtm);">${dtKey.replace(/_/g,' ')}${doc.notes?' · '+doc.notes:''}</div>
-          </div>
-        </div>
-        <div style="display:flex;align-items:center;gap:9px;flex-shrink:0;">
-          <span style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;background:${expired?'var(--red)':expiring?'var(--amb)':'var(--grn)'};color:#fff;">${st.label}</span>
-          ${doc.file_url?`<a href="${doc.file_url}" target="_blank" onclick="event.stopPropagation()" class="btn btn-o btn-sm"><i class="fa-solid fa-eye"></i></a>`:''}
-          <span style="font-size:11px;color:var(--txtm);"><i class="fa-solid fa-chevron-right"></i></span>
-        </div>
-      </div>`;
-    }).join('');
-    grid+=`<div class="cc s4">
-      <div class="cc-hd">
-        <span class="cc-t"><i class="fa-solid fa-bell" style="color:var(--red);margin-right:5px;"></i>Document Expiry Reminders</span>
-        <span class="cc-b" style="background:var(--redl);color:var(--red);">${urgentDocs.length} need attention · click to view</span>
-      </div>
-      <div style="padding:4px 0;">${remHtml}</div>
+  }).join('');
+  document.getElementById('todayPresenceList').innerHTML=presenceHtml||'<div style="text-align:center;color:var(--txtm);padding:14px;font-size:13px;">No employees yet</div>';
+
+  // ── 3. PAYROLL TREND CHART (stacked bar, 6 months) ────
+  const months6=[];const labels6=[];
+  for(let i=5;i>=0;i--){let m2=month-i,y2=year;if(m2<0){m2+=12;y2--;}months6.push({m:m2,y:y2});labels6.push(MONTHS[m2].slice(0,3)+' '+String(y2).slice(2));}
+  const trend={base:[],ot:[],exp:[],bonus:[]};
+  months6.forEach(({m:m2,y:y2})=>{let b=0,o=0,e=0,bn=0;
+    const mR=attendance.filter(r=>{const d=new Date(r.date+'T00:00:00');return d.getMonth()===m2&&d.getFullYear()===y2;});
+    emps.forEach(emp=>{
+      if(emp.pay_type==='fixed')b+=parseFloat(emp.salary)||0;
+      else mR.filter(r=>r.employee_id===emp.id&&isP(r.status)).forEach(r=>{const p=calcPay(emp,r);b+=p.base;o+=p.ot;});
+      bn+=mR.filter(r=>r.employee_id===emp.id).reduce((s,r)=>s+(parseFloat(r.bonus)||0),0);
+      const eR=expenses.filter(ex=>{const d=new Date(ex.date+'T00:00:00');return ex.employee_id===emp.id&&d.getMonth()===m2&&d.getFullYear()===y2;});
+      e+=eR.reduce((s,ex)=>s+(parseFloat(ex.amount)||0),0);
+    });
+    trend.base.push(parseFloat(b.toFixed(2)));trend.ot.push(parseFloat(o.toFixed(2)));trend.exp.push(parseFloat(e.toFixed(2)));trend.bonus.push(parseFloat(bn.toFixed(2)));
+  });
+  const ctxP=document.getElementById('payrollTrendChart');
+  if(ctxP){if(window._chartPayT)window._chartPayT.destroy();
+  window._chartPayT=new Chart(ctxP,{type:'bar',data:{labels:labels6,datasets:[
+    {label:'Base Pay',data:trend.base,backgroundColor:'rgba(37,99,235,0.75)',borderRadius:4,stack:'s'},
+    {label:'Overtime',data:trend.ot,backgroundColor:'rgba(217,119,6,0.75)',borderRadius:4,stack:'s'},
+    {label:'Expenses',data:trend.exp,backgroundColor:'rgba(8,145,178,0.75)',borderRadius:4,stack:'s'},
+    {label:'Bonus',data:trend.bonus,backgroundColor:'rgba(22,163,74,0.75)',borderRadius:4,stack:'s'},
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:12,font:{size:10,family:'Plus Jakarta Sans'},usePointStyle:true}},tooltip:{backgroundColor:'#1e293b',padding:11,cornerRadius:8,callbacks:{label:ctx=>`${ctx.dataset.label}: ${C}${ctx.raw.toFixed(2)}`}}},scales:{x:{stacked:true,grid:{display:false},ticks:{font:{size:11,family:'Plus Jakarta Sans'},color:'#64748b'}},y:{stacked:true,beginAtZero:true,grid:{color:'rgba(0,0,0,0.04)',borderDash:[4,4]},ticks:{font:{family:'JetBrains Mono',size:10},color:'#94a3b8',callback:v=>C+(v>=1000?(v/1000).toFixed(1)+'k':v)}}}}})}
+
+  // ── 4. ATTENDANCE HEATMAP (12 weeks) ──────────────────
+  const heatEl=document.getElementById('attHeatmap');
+  if(heatEl){
+    const weeks=12;const totalDays=weeks*7;let html='<div style="display:flex;gap:3px;overflow-x:auto;padding-bottom:4px;">';
+    // Day labels
+    html+='<div style="display:flex;flex-direction:column;gap:2px;margin-right:2px;">'+'<div style="height:14px;"></div>'+['Su','Mo','Tu','We','Th','Fr','Sa'].map(d=>`<div style="height:14px;width:18px;font-size:9px;color:var(--txtm);display:flex;align-items:center;">${d}</div>`).join('')+'</div>';
+    // Weeks
+    for(let w=weeks-1;w>=0;w--){
+      html+='<div style="display:flex;flex-direction:column;gap:2px;">';
+      const weekStart=new Date(now);weekStart.setDate(weekStart.getDate()-(w*7+now.getDay()));
+      // Month label
+      const wlabel=w===weeks-1||weekStart.getDate()<=7?weekStart.toLocaleDateString('en-GB',{month:'short'}):'';
+      html+=`<div style="height:14px;font-size:9px;color:var(--txtm);white-space:nowrap;">${wlabel}</div>`;
+      for(let d=0;d<7;d++){
+        const day=new Date(weekStart);day.setDate(weekStart.getDate()+d);
+        if(day>now){html+='<div style="width:14px;height:14px;border-radius:3px;background:var(--card2);"></div>';continue;}
+        const key=dateKey(day);
+        const dayRecs=attendance.filter(r=>r.date===key&&isP(r.status));
+        const pct=emps.length>0?dayRecs.length/emps.length:0;
+        const isSunday=day.getDay()===0;
+        const bg=isSunday?'rgba(165,180,252,0.35)':pct===0?'var(--bdr)':pct<0.25?'#bbf7d0':pct<0.5?'#4ade80':pct<0.75?'#16a34a':'#15803d';
+        const isT=key===todayKey;
+        html+=`<div onclick="jumpToMark('${key}')" title="${day.toLocaleDateString('en-GB')}: ${dayRecs.length}/${emps.length} present" style="width:14px;height:14px;border-radius:3px;background:${bg};cursor:pointer;transition:0.15s;${isT?'outline:2px solid var(--acc);outline-offset:1px;':''}" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'"></div>`;
+      }
+      html+='</div>';
+    }
+    html+='</div>';
+    html+=`<div style="display:flex;align-items:center;gap:6px;margin-top:8px;font-size:10px;color:var(--txtm);flex-wrap:wrap;">
+      <span>Less</span>
+      <div style="width:11px;height:11px;border-radius:2px;background:var(--bdr);"></div>
+      <div style="width:11px;height:11px;border-radius:2px;background:#bbf7d0;"></div>
+      <div style="width:11px;height:11px;border-radius:2px;background:#4ade80;"></div>
+      <div style="width:11px;height:11px;border-radius:2px;background:#16a34a;"></div>
+      <div style="width:11px;height:11px;border-radius:2px;background:#15803d;"></div>
+      <span>More</span>
+      <span style="margin-left:8px;background:#e0e7ff;border-radius:2px;width:11px;height:11px;display:inline-block;"></span><span>Sunday</span>
+      <span style="margin-left:6px;font-size:10px;color:var(--txtm);">Click any day to mark attendance</span>
     </div>`;
+    heatEl.innerHTML=html;
   }
-  document.getElementById('dashGrid').innerHTML=grid;
+
+  // ── 5. EXPENSE CATEGORY DONUT ─────────────────────────
+  const catT={};mExpenses.forEach(r=>{if(r.category){catT[r.category]=(catT[r.category]||0)+(parseFloat(r.amount)||0);}else{catT['Other']=(catT['Other']||0)+(parseFloat(r.amount)||0);}});
+  const sortedCats=Object.entries(catT).sort((a,b)=>b[1]-a[1]);
+  document.getElementById('donutSub').textContent=`${MONTHS[month]} ${year} · ${C}${totalExp.toFixed(2)} total`;
+  const ctxD=document.getElementById('expDonutChart');
+  if(ctxD){if(window._chartDonut)window._chartDonut.destroy();
+  if(sortedCats.length>0){const DCOLS=['#2563eb','#16a34a','#d97706','#7c3aed','#0891b2','#dc2626','#059669','#9333ea','#ea580c','#0369a1'];
+  window._chartDonut=new Chart(ctxD,{type:'doughnut',data:{labels:sortedCats.map(x=>x[0]),datasets:[{data:sortedCats.map(x=>parseFloat(x[1].toFixed(2))),backgroundColor:DCOLS.slice(0,sortedCats.length),borderWidth:2,borderColor:'var(--card)',hoverOffset:8}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'right',labels:{boxWidth:10,padding:9,font:{size:10,family:'Plus Jakarta Sans'},usePointStyle:true,formatter:(label,ctx)=>`${label} ${C}${ctx.parsed.toFixed(0)}`}},tooltip:{backgroundColor:'#1e293b',padding:11,cornerRadius:8,callbacks:{label:ctx=>`${ctx.label}: ${C}${ctx.raw.toFixed(2)} (${Math.round(ctx.raw/totalExp*100)}%)`}}}}})}
+  else{ctxD.parentElement.innerHTML='<div style="text-align:center;color:var(--txtm);padding:30px;font-size:13px;"><i class="fa-solid fa-receipt" style="font-size:24px;display:block;margin-bottom:8px;"></i>No expenses this month</div>';}}
+
+  // ── 6. STAFF PERFORMANCE RINGS ─────────────────────────
+  const perfEl=document.getElementById('staffPerfRings');
+  document.getElementById('perfSub').textContent=`${MONTHS[month]} ${year} · attendance + OT`;
+  // Staff filtered by staffF
+  const perfEmps=staffF==='All'?emps:[emps.find(e=>e.id===staffF)].filter(Boolean);
+  if(perfEl){perfEl.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;">${perfEmps.map(emp=>{
+    const recs=mRecs.filter(r=>r.employee_id===emp.id);
+    const pw=recs.filter(r=>isP(r.status)&&new Date(r.date+'T00:00:00').getDay()!==0).length;
+    const pct=wDays>0?Math.round(pw/wDays*100):0;
+    const ot=recs.reduce((s,r)=>s+(parseFloat(r.overtime)||0),0);
+    const hrs=recs.reduce((s,r)=>s+(parseFloat(r.hours)||0),0);
+    const pc=pct>=80?'#16a34a':pct>=60?'#d97706':'#dc2626';
+    const circum=2*Math.PI*28;const dash=circum*(pct/100);const gap=circum-dash;
+    return`<div style="background:var(--card2);border:1px solid var(--bdr);border-radius:var(--r);padding:12px;text-align:center;transition:0.2s;cursor:pointer;" onclick="editEmpModal('${emp.id}')" onmouseover="this.style.boxShadow='var(--shm)'" onmouseout="this.style.boxShadow=''">
+      <div style="position:relative;width:64px;height:64px;margin:0 auto 8px;">
+        <svg width="64" height="64" style="transform:rotate(-90deg)"><circle cx="32" cy="32" r="28" fill="none" stroke="var(--bdr)" stroke-width="5"/><circle cx="32" cy="32" r="28" fill="none" stroke="${pc}" stroke-width="5" stroke-dasharray="${dash.toFixed(1)} ${gap.toFixed(1)}" stroke-linecap="round"/></svg>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:${pc};">${pct}%</div>
+      </div>
+      <div style="font-size:11px;font-weight:700;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${emp.name.split(' ')[0]}</div>
+      <div style="font-size:10px;color:var(--txtm);">${hrs.toFixed(0)}h${ot>0?` · OT:${ot.toFixed(1)}h`:''}</div>
+    </div>`;
+  }).join('')}</div>`;}
+
+  // ── 7. OT HOTSPOT TABLE ────────────────────────────────
+  const otData=emps.map(emp=>{
+    const recs=mRecs.filter(r=>r.employee_id===emp.id);
+    const ot=recs.reduce((s,r)=>s+(parseFloat(r.overtime)||0),0);
+    const otPay=recs.filter(r=>isP(r.status)).reduce((s,r)=>s+calcPay(emp,r).ot,0);
+    return{emp,ot,otPay};
+  }).filter(x=>x.ot>0).sort((a,b)=>b.ot-a.ot);
+  const maxOT=otData[0]?.ot||1;
+  const otTop=staffF==='All'?otData.slice(0,5):otData.filter(x=>x.emp.id===staffF);
+  document.getElementById('otHotspot').innerHTML=otTop.length?otTop.map(({emp,ot,otPay})=>`
+    <div style="display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:0.5px solid var(--bdr);">
+      <span class="ava" style="background:${avcol(emp.id)};flex-shrink:0;">${inits(emp.name)}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span style="font-weight:600;">${emp.name}</span><span style="color:var(--amb);font-weight:700;font-family:'JetBrains Mono';">${ot.toFixed(1)}h${otPay>0?' · '+C+otPay.toFixed(0):''}</span></div>
+        <div style="background:var(--bdr);border-radius:3px;height:5px;"><div style="height:100%;border-radius:3px;background:${ot>8?'var(--red)':ot>4?'var(--amb)':'var(--grn)'};width:${Math.min(100,Math.round(ot/maxOT*100))}%;"></div></div>
+      </div>
+    </div>`).join(''):'<div style="text-align:center;color:var(--txtm);padding:18px;font-size:13px;"><i class="fa-solid fa-check-circle" style="font-size:22px;display:block;margin-bottom:7px;color:var(--grn);"></i>No overtime this month</div>';
+
+  // ── 8. TOP EARNERS ─────────────────────────────────────
+  const earnerData=emps.map(emp=>{
+    const recs=mRecs.filter(r=>r.employee_id===emp.id&&isP(r.status));
+    let pay=emp.pay_type==='fixed'?parseFloat(emp.salary)||0:0;
+    recs.forEach(r=>{const p=calcPay(emp,r);if(emp.pay_type!=='fixed'){pay+=p.base;}pay+=p.ot;});
+    const bn=mRecs.filter(r=>r.employee_id===emp.id).reduce((s,r)=>s+(parseFloat(r.bonus)||0),0);
+    const ex=expenses.filter(e=>{const d=new Date(e.date+'T00:00:00');return e.employee_id===emp.id&&d.getMonth()===month&&d.getFullYear()===year;}).reduce((s,e)=>s+(parseFloat(e.amount)||0),0);
+    return{emp,pay:pay+bn+ex,base:pay,bonus:bn,expenses:ex};
+  }).sort((a,b)=>b.pay-a.pay);
+  const maxPay=earnerData[0]?.pay||1;
+  const topN=staffF==='All'?5:earnerData.length;
+  document.getElementById('topEarners').innerHTML=earnerData.slice(0,topN).map(({emp,pay,bonus,expenses:ex},i)=>`
+    <div style="display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:0.5px solid var(--bdr);">
+      <div style="width:20px;height:20px;border-radius:50%;background:${i<3?['var(--amb)','var(--txtm)','#cd7f32'][i]:'var(--bdr)'};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:${i<3?'#fff':'var(--txtm)'};flex-shrink:0;">${i+1}</div>
+      <span class="ava" style="background:${avcol(emp.id)};flex-shrink:0;width:24px;height:24px;font-size:9px;">${inits(emp.name)}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span style="font-weight:600;">${emp.name}</span><span style="font-weight:700;font-family:'JetBrains Mono';color:var(--grn);">${C}${pay.toFixed(0)}</span></div>
+        <div style="background:var(--bdr);border-radius:3px;height:4px;"><div style="height:100%;border-radius:3px;background:linear-gradient(90deg,var(--grn),var(--tel));width:${Math.round(pay/maxPay*100)}%;"></div></div>
+        ${bonus>0||ex>0?`<div style="font-size:10px;color:var(--txtm);margin-top:2px;">${bonus>0?`+${C}${bonus.toFixed(0)} bonus`:''}${ex>0?` +${C}${ex.toFixed(0)} exp`:''}</div>`:''}
+      </div>
+    </div>`).join('');
+
+  // ── 9. DOCUMENT EXPIRY TIMELINE ────────────────────────
+  const docEl=document.getElementById('docExpiryTimeline');
+  if(docEl){
+    const urgent=renderDocReminders();
+    if(!urgent.length){docEl.innerHTML='<div style="text-align:center;color:var(--txtm);padding:18px;font-size:13px;"><i class="fa-solid fa-shield-check" style="font-size:24px;color:var(--grn);display:block;margin-bottom:8px;"></i>All documents valid</div>';
+    }else{
+      const now2=new Date();
+      docEl.innerHTML=urgent.map(doc=>{
+        const emp2=employees.find(e=>e.id===doc.employee_id);
+        const st=getDocStatus(doc);
+        const def=DOC_TYPES[doc.doc_type]||{icon:'fa-file',color:'#64748b'};
+        const daysLeft=doc.expiry_date?Math.ceil((new Date(doc.expiry_date+'T00:00:00')-now2)/(1000*60*60*24)):null;
+        const barW=daysLeft===null?100:Math.max(0,Math.min(100,Math.round(daysLeft/(doc.reminder_days||30)*100)));
+        return`<div onclick="openDocForEmp('${doc.employee_id}')" style="padding:9px 0;border-bottom:0.5px solid var(--bdr);cursor:pointer;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+            <div style="display:flex;align-items:center;gap:7px;"><i class="fa-solid ${def.icon}" style="color:${def.color};font-size:12px;"></i><span style="font-size:12px;font-weight:600;">${emp2?.name||'?'}</span><span style="font-size:11px;color:var(--txtm);">· ${doc.name}</span></div>
+            <span style="font-size:11px;font-weight:700;color:${st.color};">${st.label}</span>
+          </div>
+          <div style="background:var(--bdr);border-radius:3px;height:4px;"><div style="height:100%;border-radius:3px;background:${st.color};width:${barW}%;transition:width 0.5s;"></div></div>
+        </div>`;
+      }).join('');
+    }
+  }
+
+  // ── 10. ATTENDANCE WARNINGS ────────────────────────────
+  document.getElementById('warnThresh').textContent=`Below ${thr}%`;
+  const warnFiltered=staffF==='All'?warns:warns.filter(e=>e.id===staffF);
+  const warnHtml=warnFiltered.map(emp=>{
+    const recs=mRecs.filter(r=>r.employee_id===emp.id);
+    const pw=recs.filter(r=>isP(r.status)&&new Date(r.date+'T00:00:00').getDay()!==0).length;
+    const pct=wDays>0?Math.round(pw/wDays*100):0;
+    const circum=2*Math.PI*16;const dash=circum*(pct/100);
+    return`<div style="display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:0.5px solid var(--bdr);">
+      <div style="position:relative;width:36px;height:36px;flex-shrink:0;">
+        <svg width="36" height="36" style="transform:rotate(-90deg)"><circle cx="18" cy="18" r="16" fill="none" stroke="var(--bdr)" stroke-width="4"/><circle cx="18" cy="18" r="16" fill="none" stroke="var(--red)" stroke-width="4" stroke-dasharray="${dash.toFixed(1)} ${(circum-dash).toFixed(1)}" stroke-linecap="round"/></svg>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:var(--red);">${pct}%</div>
+      </div>
+      <div style="flex:1;"><div style="font-size:13px;font-weight:600;">${emp.name}</div><div style="font-size:11px;color:var(--txtm);">${pw}/${wDays} days · ${recs.filter(r=>r.status==='A').length} absences</div></div>
+      <button onclick="event.stopPropagation();jumpToMark(dateKey(new Date()))" class="btn btn-o btn-sm" style="font-size:11px;"><i class="fa-solid fa-pen"></i></button>
+    </div>`;
+  }).join('');
+  document.getElementById('warnTable').innerHTML='<div style="padding:4px 0;">'+warnHtml+'</div>'||'<div style="text-align:center;color:var(--txtm);padding:16px;font-size:13px;"><i class="fa-solid fa-party-horn" style="font-size:22px;color:var(--grn);display:block;margin-bottom:7px;"></i>All employees above threshold 🎉</div>';
+
+  // ── 11. SMART INSIGHTS ────────────────────────────────
+  const filteredMRecs=staffF==='All'?mRecs:mRecs.filter(r=>r.employee_id===staffF);
+  const totalPD=filteredMRecs.filter(r=>isP(r.status)&&new Date(r.date+'T00:00:00').getDay()!==0).length;
+  const cpd=totalPD>0?(payrollEst+totalExp)/totalPD:0;
+  const topEmp=emps.map(e=>({name:e.name,d:mRecs.filter(r=>r.employee_id===e.id&&isP(r.status)).length})).sort((a,b)=>b.d-a.d)[0];
+  const totalOTH=mRecs.reduce((s,r)=>s+(parseFloat(r.overtime)||0),0);
+  const insightItems=[
+    {l:'Cost per working day',v:`${C}${cpd.toFixed(2)}`,s:'payroll + expenses',ico:'fa-calculator'},
+    {l:'Total OT this month',v:`${totalOTH.toFixed(1)}h`,s:`${C}${otTotal.toFixed(0)} in OT pay`,ico:'fa-hourglass'},
+    {l:'Top attender',v:topEmp?.name.split(' ')[0]||'—',s:topEmp?`${topEmp.d} days present`:'',ico:'fa-medal'},
+    {l:'Expense vs Payroll',v:payrollEst>0?Math.round(totalExp/payrollEst*100)+'%':'—',s:'expenses as % of payroll',ico:'fa-percent'},
+    {l:'Avg hours/day',v:totalPD>0?(monthHrs/totalPD).toFixed(1)+'h':'—',s:'per present employee',ico:'fa-chart-line'},
+    {l:'Pending approvals',v:pendingCount,s:'expense batches to review',ico:'fa-inbox'},
+  ];
+  document.getElementById('smartInsights').innerHTML=insightItems.map(ins=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--bdr);">
+      <div style="width:30px;height:30px;border-radius:7px;background:var(--accl);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid ${ins.ico}" style="color:var(--acc);font-size:12px;"></i></div>
+      <div style="flex:1;"><div style="font-size:11px;color:var(--txtm);">${ins.l}</div></div>
+      <div style="text-align:right;"><div style="font-size:14px;font-weight:800;">${ins.v}</div><div style="font-size:10px;color:var(--txtm);">${ins.s}</div></div>
+    </div>`).join('');
+
+  // Document reminder banner
+  const urgentDocs=renderDocReminders();
+  const banEl=document.getElementById('docReminderBanner');
+  if(banEl){
+    if(urgentDocs.length>0){
+      const expired=urgentDocs.filter(d=>getDocStatus(d).status==='expired').length;
+      banEl.innerHTML=`<div style="background:var(--redl);border:1px solid rgba(220,38,38,0.25);border-left:4px solid var(--red);border-radius:var(--r);padding:9px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;cursor:pointer;" onclick="navigate('employees')">
+        <i class="fa-solid fa-file-circle-exclamation" style="color:var(--red);font-size:16px;"></i>
+        <span style="font-size:13px;font-weight:600;color:var(--red);">${expired>0?expired+' document'+(expired>1?'s':'')+' expired · ':''}${urgentDocs.length} document${urgentDocs.length>1?'s':''} need attention</span>
+        <span style="margin-left:auto;font-size:12px;color:var(--red);font-weight:600;">View →</span>
+      </div>`;
+    }else banEl.innerHTML='';
+  }
 }
+
 
 // ═══════════════════════════════════════════════════
 // MARK ATTENDANCE
@@ -1393,11 +1847,21 @@ function renderDashboard(){
 function renderMark(){updateMarkNav();buildMarkTable();}
 function updateMarkNav(){
   const key=dateKey(markDate);
+  const markDayN=dayName(markDate);
   document.getElementById('markDisp').textContent=fmtDate(markDate);
-  document.getElementById('markDayName').textContent=dayName(markDate);
   document.getElementById('markPicker').value=key;
-  document.getElementById('sunBadge').style.display=isSun(markDate)?'':'none';
-  document.getElementById('satBadge').style.display=isSat(markDate)?'':'none';
+  const dayBadge=document.getElementById('dayBadge');
+  if(dayBadge){
+    const dow=markDate.getDay();
+    const dayNames=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const dayEmojis=['☀️','','','','','','📅'];
+    const isSu=dow===0, isSa=dow===6;
+    const bg=isSu?'rgba(99,102,241,0.12)':isSa?'rgba(124,58,237,0.1)':'var(--accl)';
+    const col=isSu?'#4338ca':isSa?'#7c3aed':'var(--acc)';
+    dayBadge.style.background=bg;
+    dayBadge.style.color=col;
+    dayBadge.textContent=(dayEmojis[dow]?dayEmojis[dow]+' ':'')+dayNames[dow];
+  }
 }
 function buildMarkTable(){
   const emps=employees.filter(e=>e.status==='Active');
@@ -1412,7 +1876,7 @@ function buildMarkTable(){
     const dIn=emp.work_start||cfg.work_start||'08:00';
     const dOut=emp.work_end||cfg.work_end||'17:00';
     const st=rec?.status||'';
-    const sOpts=`<option value="">— Not Marked —</option>`+STATUSES.map(s=>`<option value="${s.c}"${st===s.c?' selected':''}>${s.c} – ${s.l}</option>`).join('');
+    const sOpts=`<option value="">— Not Marked —</option>`+STATUSES.map(s=>`<option value="${s.c}"${st===s.c?' selected':''}>${s.c} – ${s.l}</option>`).join('')+`<option value="CLEAR">✕ Clear / Remove</option>`;
     const wkLbl=iS?'<span style="font-size:9px;color:#4338ca;font-weight:700;background:#e0e7ff;padding:1px 4px;border-radius:3px;margin-left:3px;">SUN</span>':isA?'<span style="font-size:9px;color:#7c3aed;font-weight:700;background:#ede9fe;padding:1px 4px;border-radius:3px;margin-left:3px;">SAT</span>':'';
     const notMarkedCls=!st?' style="opacity:0.65;"':'';
     return`<tr class="${rowCls}" id="mr-${emp.id}"${notMarkedCls}>
@@ -1486,7 +1950,18 @@ async function saveAttSilent(){
   _touched.forEach(empId=>{
     const row=document.getElementById(`mr-${empId}`);if(!row)return;
     const g=f=>row.querySelector(`[data-f="${f}"]`)?.value||null;
-    const status=g('status');if(!status)return;
+    const status=g('status');
+    if(status==='CLEAR'){
+      // Delete this attendance record - handle async inline
+      const existRec=attendance.find(a=>a.employee_id===empId&&a.date===key);
+      if(existRec){
+        sb.from('attendance').delete().eq('id',existRec.id).then(()=>{
+          attendance=attendance.filter(a=>a.id!==existRec.id);
+        });
+      }
+      return;
+    }
+    if(!status)return;
     const h=g('hours'),ot=g('overtime');
     toSave.push({employee_id:empId,date:key,status,sign_in:g('sign_in')||null,sign_out:g('sign_out')||null,hours:h?parseFloat(h):null,overtime:ot?parseFloat(ot):null,bonus:g('bonus')?parseFloat(g('bonus')):null,jobs:g('jobs')?parseInt(g('jobs')):null,notes:g('notes')||null});
   });
@@ -1506,7 +1981,18 @@ async function saveAllAttendance(){
   document.querySelectorAll('#markBody tr').forEach(row=>{
     const empId=row.querySelector('[data-eid]')?.dataset.eid;if(!empId)return;
     const g=f=>row.querySelector(`[data-f="${f}"]`)?.value||null;
-    const status=g('status');if(!status)return;
+    const status=g('status');
+    if(status==='CLEAR'){
+      // Delete this attendance record - handle async inline
+      const existRec=attendance.find(a=>a.employee_id===empId&&a.date===key);
+      if(existRec){
+        sb.from('attendance').delete().eq('id',existRec.id).then(()=>{
+          attendance=attendance.filter(a=>a.id!==existRec.id);
+        });
+      }
+      return;
+    }
+    if(!status)return;
     const h=g('hours'),ot=g('overtime');
     toSave.push({employee_id:empId,date:key,status,sign_in:g('sign_in')||null,sign_out:g('sign_out')||null,hours:h?parseFloat(h):null,overtime:ot?parseFloat(ot):null,bonus:g('bonus')?parseFloat(g('bonus')):null,jobs:g('jobs')?parseInt(g('jobs')):null,notes:g('notes')||null});
   });
@@ -1567,15 +2053,29 @@ function renderLedger(){
 function buildLedRow(row,i,running,C,isEx,totalRows){
   const tagsHtml=buildTagsCell(row.tags||[],row.id);
   const catStyle=getCatStyle(row.category);
-  return`<tr>
-    <td style="text-align:center;width:24px;"><span style="font-size:11px;color:var(--txtm);">${i+1}</span></td>
+  const st=row.status||'draft';
+  const fromEmployee=row.receipt_url||row.notes; // submitted via mobile if has receipt or note
+  const stBadge=st==='approved'?'<span style="font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;background:#dcfce7;color:#15803d;">✓</span>':
+                st==='rejected'?'<span style="font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;background:#fee2e2;color:#b91c1c;">✗</span>':
+                st==='pending'?'<span style="font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;background:#fef3c7;color:#b45309;">⏳</span>':'';
+  return`<tr style="${row.flagged?'background:rgba(220,38,38,0.04);':''}">
+    <td style="text-align:center;width:24px;"><span style="font-size:11px;color:var(--txtm);">${i+1}</span>${stBadge}</td>
     <td><input type="date" class="shi" value="${row.date||''}" ${isEx?'disabled':''} onchange="updateExp('${row.id}','date',this.value)"></td>
-    <td><input type="text" class="shi" placeholder="Description..." value="${(row.merchant||'').replace(/"/g,'&quot;')}" ${isEx?'disabled':''} oninput="updateExp('${row.id}','merchant',this.value);checkAutoNextRow('${row.id}',${i},${totalRows||1})"></td>
+    <td>
+      <input type="text" class="shi" placeholder="Description..." value="${(row.merchant||'').replace(/"/g,'&quot;')}" ${isEx?'disabled':''} oninput="updateExp('${row.id}','merchant',this.value);checkAutoNextRow('${row.id}',${i},${totalRows||1})">
+      ${row.receipt_url?`<a href="${row.receipt_url}" target="_blank" style="font-size:10px;color:var(--acc);display:flex;align-items:center;gap:3px;margin-top:2px;"><i class="fa-solid fa-paperclip"></i>Receipt</a>`:''}
+      ${row.notes?`<div style="font-size:10px;color:var(--txtm);margin-top:1px;font-style:italic;">"${row.notes}"</div>`:''}
+    </td>
     <td><input type="text" class="shi cat-inp" list="ledCatList" placeholder="Category" value="${(row.category||'').replace(/"/g,'&quot;')}" style="${catStyle}" ${isEx?'disabled':''} oninput="updateExp('${row.id}','category',this.value)"></td>
     <td><div class="tc" id="tc-${row.id}">${tagsHtml}</div></td>
     <td><input type="number" class="shi amt-i" placeholder="0.00" step="0.01" min="0" value="${row.amount===0?'':row.amount}" ${isEx?'disabled':''} oninput="updateExp('${row.id}','amount',parseFloat(this.value)||0)" onblur="renderLedger()"></td>
     <td class="run-t">${C}${running.toFixed(2)}</td>
-    <td style="text-align:center;"><button class="ra-btn del" onclick="deleteLedRow('${row.id}')" title="Delete"><i class="fa-solid fa-trash-alt"></i></button></td>
+    <td style="text-align:center;white-space:nowrap;">
+      ${st!=='approved'?`<button class="ra-btn" onclick="approveExp('${row.id}')" title="Approve" style="color:var(--grn);"><i class="fa-solid fa-check"></i></button>`:''}
+      ${st!=='rejected'?`<button class="ra-btn del" onclick="rejectExp('${row.id}')" title="Reject"><i class="fa-solid fa-xmark"></i></button>`:''}
+      ${!row.flagged?`<button class="ra-btn" onclick="flagExp('${row.id}')" title="Flag" style="color:var(--amb);"><i class="fa-solid fa-flag"></i></button>`:`<button class="ra-btn" onclick="unflagExp('${row.id}')" title="Unflag" style="color:var(--red);"><i class="fa-solid fa-flag"></i></button>`}
+      <button class="ra-btn del" onclick="deleteLedRow('${row.id}')" title="Delete"><i class="fa-solid fa-trash-alt"></i></button>
+    </td>
   </tr>`;
 }
 function buildTagsCell(tags,expId){
@@ -1587,7 +2087,26 @@ function buildTagsCell(tags,expId){
 function getAllTags(){const custom=cfg.tags||[];if(!custom.find(t=>(t.name||t)==='VAT'))return[{name:'VAT',color:'#d97706'},...custom.map(t=>typeof t==='string'?{name:t,color:'#4f46e5'}:t)];return custom.map(t=>typeof t==='string'?{name:t,color:'#4f46e5'}:t);}
 function getTagDef(name){if(name==='VAT')return{name:'VAT',color:'#d97706'};return(cfg.tags||[]).find(t=>(t.name||t)===name)||{name,color:'#4f46e5'};}
 function h2rgba(hex,alpha){if(!hex||hex.length<7)return`rgba(79,70,229,${alpha})`;const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return`rgba(${r},${g},${b},${alpha})`;}
-function getCatStyle(cat){if(!cat)return'';let hash=0;for(let i=0;i<cat.length;i++)hash=cat.charCodeAt(i)+((hash<<5)-hash);const h=Math.abs(hash%360);return`background:hsl(${h},85%,94%);color:hsl(${h},80%,25%);border:1px solid hsl(${h},60%,85%);`;}
+// Persistent category colours - stable hue per category name
+const _catColorCache={};
+function getCatHue(cat){
+  if(!cat)return 220;
+  if(_catColorCache[cat])return _catColorCache[cat];
+  // Spread hues evenly based on first letter + name length
+  const known={'Travel':205,'Fuel':30,'Meals':120,'Food':120,'Equipment':260,'Tools':260,
+    'Software':200,'Materials':45,'Accommodation':280,'Insurance':180,'Training':320,
+    'Parking':60,'Phone':170,'Utilities':90,'Office':240,'Other':0,'Misc':340};
+  if(known[cat]!==undefined){_catColorCache[cat]=known[cat];return known[cat];}
+  let hash=5381;for(let i=0;i<cat.length;i++)hash=(hash*33)^cat.charCodeAt(i);
+  const hue=Math.abs(hash%330); // avoid reds clashing with status colours
+  _catColorCache[cat]=hue;return hue;
+}
+function getCatStyle(cat){
+  if(!cat)return'';
+  const h=getCatHue(cat);
+  return`background:hsl(${h},80%,94%);color:hsl(${h},75%,28%);border:1px solid hsl(${h},60%,85%);`;
+}
+function getCatColor(cat){const h=getCatHue(cat);return`hsl(${h},70%,50%)`;}
 function openTagPicker(e,expId){
   e.stopPropagation();
   if(_activeTagPicker){_activeTagPicker.style.display='none';_activeTagPicker=null;}
@@ -1694,6 +2213,43 @@ async function deleteLedRow(id){
   if(r.error){toast(r.error.message,'e');return;}
   expenses=expenses.filter(e=>e.id!==id);renderLedger();toast('Row deleted','i');
 }
+async function approveExp(id){
+  const r=await sb.from('expenses').update({status:'approved'}).eq('id',id);
+  if(r.error){toast(r.error.message,'e');return;}
+  const idx=expenses.findIndex(e=>e.id===id);if(idx>=0)expenses[idx].status='approved';
+  renderLedger();toast('Expense approved','s');
+}
+async function rejectExp(id){
+  const r=await sb.from('expenses').update({status:'rejected'}).eq('id',id);
+  if(r.error){toast(r.error.message,'e');return;}
+  const idx=expenses.findIndex(e=>e.id===id);if(idx>=0)expenses[idx].status='rejected';
+  renderLedger();toast('Expense rejected','i');
+}
+async function flagExp(id){
+  const reason=prompt('Reason for flagging (shown to employee):');if(reason===null)return;
+  const r=await sb.from('expenses').update({flagged:true,flag_note:reason}).eq('id',id);
+  if(r.error){toast(r.error.message,'e');return;}
+  const idx=expenses.findIndex(e=>e.id===id);if(idx>=0){expenses[idx].flagged=true;expenses[idx].flag_note=reason;}
+  renderLedger();updateBadges();toast('Expense flagged','i');
+}
+async function unflagExp(id){
+  const r=await sb.from('expenses').update({flagged:false,flag_note:null}).eq('id',id);
+  if(r.error){toast(r.error.message,'e');return;}
+  const idx=expenses.findIndex(e=>e.id===id);if(idx>=0){expenses[idx].flagged=false;expenses[idx].flag_note=null;}
+  renderLedger();updateBadges();toast('Flag removed','i');
+}
+async function approveAllExp(){
+  if(!ledgerStaff)return;
+  const data=expenses.filter(e=>{
+    const d=new Date(e.date+'T00:00:00');
+    return e.employee_id===ledgerStaff&&d.getFullYear()===ledgerYear&&String(d.getMonth()+1).padStart(2,'0')===ledgerMonth&&e.status!=='approved';
+  });
+  if(!data.length){toast('No pending expenses','i');return;}
+  if(!confirm(`Approve all ${data.length} expenses for this month?`))return;
+  await Promise.all(data.map(e=>sb.from('expenses').update({status:'approved'}).eq('id',e.id)));
+  data.forEach(e=>{const idx=expenses.findIndex(x=>x.id===e.id);if(idx>=0)expenses[idx].status='approved';});
+  renderLedger();toast(`${data.length} expenses approved ✓`,'s');
+}
 async function handleQE(e){
   if(e.key!=='Enter')return;
   const val=e.target.value.trim();if(!val||!ledgerStaff)return;
@@ -1759,10 +2315,32 @@ async function reviewBatch(id,status){
 // ═══════════════════════════════════════════════════
 // TAGS & ANALYTICS
 // ═══════════════════════════════════════════════════
+function shiftTags(n){
+  const m=document.getElementById('tagsMonth'),y=document.getElementById('tagsYear');
+  let mo=parseInt(m.value)+n,yr=parseInt(y.value);
+  if(mo<0){mo=11;yr--;}else if(mo>11){mo=0;yr++;}
+  m.value=mo;y.value=yr;
+  const dm=document.getElementById('tagsDisp_m'),dy=document.getElementById('tagsDisp_y');
+  if(dm)dm.textContent=MONTHS[mo];if(dy)dy.textContent=yr;
+  renderTags();
+}
+async function addTagPrompt(){
+  const name=prompt('New tag name (e.g. Fuel, Materials, Accommodation):');
+  if(!name||!name.trim())return;
+  const color=prompt('Tag colour (hex, e.g. #2563eb):','#2563eb')||'#2563eb';
+  const tags=[...(cfg.tags||[])];
+  if(tags.find(t=>(t.name||t)===name.trim())){toast('Tag already exists','e');return;}
+  tags.push({name:name.trim(),color});
+  await sbUpsertSettings({tags});
+  toast(`Tag "${name.trim()}" added!`,'s');
+  renderTags();
+}
 function renderTags(){
   const staffF=document.getElementById('tagsStaff')?.value||'All';
   const month=parseInt(document.getElementById('tagsMonth')?.value??new Date().getMonth());
   const year=parseInt(document.getElementById('tagsYear')?.value??new Date().getFullYear());
+  const tagsDm=document.getElementById('tagsDisp_m'),tagsDy=document.getElementById('tagsDisp_y');
+  if(tagsDm)tagsDm.textContent=MONTHS[month];if(tagsDy)tagsDy.textContent=year;
   const C=cur();
   // Populate staff sel
   const ts=document.getElementById('tagsStaff');
@@ -1781,15 +2359,59 @@ function renderTags(){
   document.getElementById('tagBreakdown').innerHTML=sorted.length?sorted.map(([t,v])=>{const def=getTagDef(t);const col=def.color||'#4f46e5';return`<div style="margin-bottom:9px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;"><span style="font-size:12px;font-weight:700;padding:2px 7px;border-radius:20px;background:${h2rgba(col,0.12)};color:${col};">${t}</span><span style="font-family:'JetBrains Mono';font-size:12px;font-weight:700;">${C}${v.toFixed(2)}</span></div><div class="pb"><div style="height:100%;border-radius:3px;background:${col};width:${Math.round(v/maxV*100)}%;"></div></div></div>`;}).join(''):'<p style="color:var(--txtm);font-size:13px;">No tagged expenses</p>';
   document.getElementById('vatSummary').innerHTML=vatTotal>0?`<div style="font-size:13px;line-height:2.1;"><div style="display:flex;justify-content:space-between;"><span>VAT-tagged items</span><strong>${vatCount}</strong></div><div style="display:flex;justify-content:space-between;"><span>Total VAT-tagged spend</span><strong>${C}${vatTotal.toFixed(2)}</strong></div><div style="display:flex;justify-content:space-between;border-top:1px solid var(--bdr);padding-top:5px;margin-top:4px;"><span>Est. VAT @ 20% (÷6)</span><strong style="color:var(--grn);">${C}${(vatTotal/6).toFixed(2)}</strong></div></div>`:'<p style="color:var(--txtm);font-size:13px;">No VAT-tagged items</p>';
   const allT=getAllTags();
-  document.getElementById('tagsMgmt').innerHTML=`<div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:11px;">${allT.map(t=>`<span style="font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;background:${h2rgba(t.color,0.12)};color:${t.color};">${t.name}</span>`).join('')}</div><p style="font-size:12px;color:var(--txtm);">Tags are managed in Settings → Expenses. Use the tag button (＋) on each expense row to apply tags.</p>`;
+  const allTags2=getAllTags();
+  const vatExps=data.filter(r=>r.tags?.includes('VAT')&&r.receipt_url);
+  document.getElementById('tagsMgmt').innerHTML=`
+    <div style="margin-bottom:13px;">
+      <div style="font-size:12px;font-weight:700;color:var(--txtm);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:9px;">All Tags</div>
+      <div style="display:flex;flex-wrap:wrap;gap:7px;">${allTags2.map(t=>`<span style="font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;background:${h2rgba(t.color,0.12)};color:${t.color};cursor:pointer;" onclick="addTagPrompt()">${t.name}</span>`).join('')}</div>
+    </div>
+    ${vatExps.length>0?`<div style="background:var(--ambl);border:1px solid rgba(217,119,6,0.2);border-radius:var(--r);padding:13px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;">
+        <div style="font-size:13px;font-weight:700;color:var(--amb);">VAT Receipts (${vatExps.length} attached)</div>
+        <button class="btn btn-a btn-sm" onclick="downloadVATReceipts()"><i class="fa-solid fa-download"></i>Download All</button>
+      </div>
+      <div style="font-size:12px;color:var(--txt2);">These expenses have VAT tags and file attachments. Download for your accountant.</div>
+    </div>`:'<p style="font-size:12px;color:var(--txtm);">No VAT receipts with attachments found for this period.</p>'}`;
+}
+
+function downloadVATReceipts(){
+  const staffF=document.getElementById('tagsStaff')?.value||'All';
+  const month=parseInt(document.getElementById('tagsMonth')?.value??new Date().getMonth());
+  const year=parseInt(document.getElementById('tagsYear')?.value??new Date().getFullYear());
+  const vatExps=expenses.filter(r=>{
+    const d=new Date(r.date+'T00:00:00');
+    return r.tags?.includes('VAT')&&r.receipt_url&&d.getMonth()===month&&d.getFullYear()===year&&(staffF==='All'||r.employee_id===staffF);
+  });
+  if(!vatExps.length){toast('No VAT receipts with attachments found','e');return;}
+  toast(`Opening ${vatExps.length} receipt${vatExps.length>1?'s':''}...`,'i');
+  vatExps.forEach((e,i)=>{
+    setTimeout(()=>{
+      const a=document.createElement('a');
+      a.href=e.receipt_url;a.target='_blank';
+      a.download=`VAT_${e.date}_${(e.merchant||'receipt').replace(/[^a-z0-9]/gi,'_')}`;
+      a.click();
+    },i*400);
+  });
 }
 
 // ═══════════════════════════════════════════════════
 // MONTHLY VIEW
 // ═══════════════════════════════════════════════════
+function shiftMonthly(n){
+  const m=document.getElementById('mvMonth'),y=document.getElementById('mvYear');
+  let mo=parseInt(m.value)+n,yr=parseInt(y.value);
+  if(mo<0){mo=11;yr--;}else if(mo>11){mo=0;yr++;}
+  m.value=mo;y.value=yr;
+  const dm=document.getElementById('mvDisp_m'),dy=document.getElementById('mvDisp_y');
+  if(dm)dm.textContent=MONTHS[mo];if(dy)dy.textContent=yr;
+  renderMonthly();
+}
 function renderMonthly(){
   const month=parseInt(document.getElementById('mvMonth').value);
   const year=parseInt(document.getElementById('mvYear').value);
+  const mvDm=document.getElementById('mvDisp_m'),mvDy=document.getElementById('mvDisp_y');
+  if(mvDm)mvDm.textContent=MONTHS[month];if(mvDy)mvDy.textContent=year;
   const days=dim(year,month);const emps=employees.filter(e=>e.status==='Active');
   let hRow='<thead><tr><th style="text-align:left;padding-left:9px;">Employee</th>';
   for(let d=1;d<=days;d++){const dt=new Date(year,month,d),dow=dt.getDay();const cc=(dow===0?'sc2':dow===6?'wc':'')+(dow===1?' wsc':'');hRow+=`<th class="${cc}" style="width:22px;">${d}<br><span style="font-size:7px;">${['Su','Mo','Tu','We','Th','Fr','Sa'][dow]}</span></th>`;}
@@ -1822,7 +2444,6 @@ function renderMonthly(){
 function renderDaily(){updateDailyNav();buildDailyTable();}
 function updateDailyNav(){
   document.getElementById('dvDisp').textContent=fmtDate(dailyDate);
-  document.getElementById('dvDay').textContent=dayName(dailyDate)+(isSun(dailyDate)?' ☀':isSat(dailyDate)?' 📅':'');
   document.getElementById('dvPicker').value=dateKey(dailyDate);
   document.getElementById('dvSub').textContent=fmtDate(dailyDate)+' — '+dayName(dailyDate);
   const locked=(cfg.locked_months||[]).includes(`${dailyDate.getFullYear()}_${dailyDate.getMonth()}`);
@@ -1844,6 +2465,15 @@ function setDailyDate(v){dailyDate=new Date(v+'T00:00:00');renderDaily();}
 // ═══════════════════════════════════════════════════
 // EMPLOYEE REPORT
 // ═══════════════════════════════════════════════════
+function shiftEmpReport(n){
+  const m=document.getElementById('erMonth'),y=document.getElementById('erYear');
+  let mo=parseInt(m.value)+n,yr=parseInt(y.value);
+  if(mo<0){mo=11;yr--;}else if(mo>11){mo=0;yr++;}
+  m.value=mo;y.value=yr;
+  const dm=document.getElementById('erDisp_m'),dy=document.getElementById('erDisp_y');
+  if(dm)dm.textContent=MONTHS[mo];if(dy)dy.textContent=yr;
+  renderEmpReport();
+}
 function renderEmpReport(){
   const empId=document.getElementById('erEmp')?.value;
   const month=parseInt(document.getElementById('erMonth')?.value);
@@ -1916,6 +2546,7 @@ function printTimesheet(){
 // ═══════════════════════════════════════════════════
 function renderYearly(){
   const year=parseInt(document.getElementById('yrSel').value);
+  const d=document.getElementById('yrDisp');if(d)d.textContent=year;
   const emps=employees.filter(e=>e.status==='Active');
   const att=attendance.filter(r=>new Date(r.date+'T00:00:00').getFullYear()===year);
   const yWD=Array.from({length:12},(_,m)=>Array.from({length:dim(year,m)},(_,d)=>isWD(new Date(year,m,d+1))).filter(Boolean).length).reduce((s,v)=>s+v,0);
@@ -1936,7 +2567,12 @@ function renderYearly(){
   }).join('');
   document.getElementById('yrTable').innerHTML=`<table><thead><tr><th>Employee</th>${MONTHS.map(m=>`<th style="text-align:center">${m.slice(0,3)}</th>`).join('')}<th>Present</th><th>Absent</th><th>Hours</th><th>OT</th><th>☀</th><th>Est Pay</th><th>Att%</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
-function shiftYear(n){const s=document.getElementById('yrSel');if(!s)return;s.value=parseInt(s.value)+n;renderYearly();}
+function shiftYear(n){
+  const s=document.getElementById('yrSel');if(!s)return;
+  s.value=parseInt(s.value)+n;
+  const d=document.getElementById('yrDisp');if(d)d.textContent=s.value;
+  renderYearly();
+}
 
 // ═══════════════════════════════════════════════════
 // GLOBAL SEARCH
@@ -1957,7 +2593,15 @@ function renderSearch(q){
 // ═══════════════════════════════════════════════════
 // PAYROLL
 // ═══════════════════════════════════════════════════
-function shiftPayroll(n){const m=document.getElementById('prMonth'),y=document.getElementById('prYear');let mo=parseInt(m.value)+n,yr=parseInt(y.value);if(mo<0){mo=11;yr--;}else if(mo>11){mo=0;yr++;}m.value=mo;y.value=yr;renderPayroll();}
+function shiftPayroll(n){
+  const m=document.getElementById('prMonth'),y=document.getElementById('prYear');
+  let mo=parseInt(m.value)+n,yr=parseInt(y.value);
+  if(mo<0){mo=11;yr--;}else if(mo>11){mo=0;yr++;}
+  m.value=mo;y.value=yr;
+  const dm=document.getElementById('prDisp_m'),dy=document.getElementById('prDisp_y');
+  if(dm)dm.textContent=MONTHS[mo];if(dy)dy.textContent=yr;
+  renderPayroll();
+}
 function renderPayroll(){
   populateMY('prMonth','prYear');
   // Load payment statuses for this month
@@ -1982,6 +2626,8 @@ function renderPayroll(){
   const locked=(cfg.locked_months||[]).includes(`${y}_${m}`);
   const C=cur();
   document.getElementById('prTitle').textContent=`Payroll — ${MONTHS[m]} ${y}${locked?' 🔒':''}`;
+  const prDm=document.getElementById('prDisp_m'),prDy=document.getElementById('prDisp_y');
+  if(prDm)prDm.textContent=MONTHS[m];if(prDy)prDy.textContent=y;
   const lockBtn=document.getElementById('lockBtn');if(lockBtn)lockBtn.innerHTML=locked?'<i class="fa-solid fa-lock-open"></i>Unlock':'<i class="fa-solid fa-lock"></i>Lock';
   const lb=document.getElementById('prLockBanner');if(lb){lb.style.display=locked?'flex':'none';const lt=document.getElementById('prLockTxt');if(lt)lt.textContent=`${MONTHS[m]} ${y} is locked. Unlock to edit.`;}
   let gBase=0,gOT=0,gBonus=0,gExp=0,gTotal=0,gBank=0,gCash=0;
@@ -2329,8 +2975,36 @@ function populateMsgSel(){
   sel.innerHTML='<option value="">— Choose employee —</option>';
   employees.filter(e=>e.status==='Active').forEach(e=>{sel.appendChild(new Option(e.name,e.id));});
 }
+async function populateMsgEmpList(){
+  const el=document.getElementById('msgEmpList');if(!el)return;
+  const active=employees.filter(e=>e.status==='Active');
+  el.innerHTML=active.map(e=>{
+    const unread=messages.filter(m=>m.employee_id===e.id&&!m.read&&m.sender!=='office').length;
+    return`<div onclick="document.getElementById('msgEmpSel').value='${e.id}';loadMessages('${e.id}')" style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;border-bottom:0.5px solid var(--bdr);transition:0.15s;" onmouseover="this.style.background='var(--card2)'" onmouseout="this.style.background=''">
+      <span class="ava" style="background:${avcol(e.id)};width:28px;height:28px;font-size:10px;">${inits(e.name)}</span>
+      <span style="flex:1;font-size:13px;font-weight:${unread>0?'700':'500'};">${e.name}</span>
+      ${unread>0?`<span style="background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;">${unread}</span>`:''}
+    </div>`;
+  }).join('');
+}
+
+async function clearChat(){
+  const empId=document.getElementById('msgEmpSel').value;
+  if(!empId)return;
+  const emp=employees.find(e=>e.id===empId);
+  if(!confirm(`Delete ALL messages with ${emp?.name||'this employee'}? This cannot be undone.`))return;
+  const r=await sb.from('messages').delete().eq('employee_id',empId);
+  if(r.error){toast(r.error.message,'e');return;}
+  messages=messages.filter(m=>m.employee_id!==empId);
+  loadMessages(empId);toast('Chat cleared','i');
+  updateBadges();
+}
+
 async function loadMessages(empId){
-  if(!empId){document.getElementById('msgList').innerHTML='<div class="es" style="padding:20px;"><i class="fa-solid fa-comments"></i><h3>Select an employee</h3></div>';return;}
+  if(!empId){document.getElementById('msgList').innerHTML='<div class="es" style="padding:20px;"><i class="fa-solid fa-comments"></i><h3>Select an employee</h3></div>';
+  const cb=document.getElementById('clearChatBtn');if(cb)cb.style.display='none';
+  return;}
+  const cb=document.getElementById('clearChatBtn');if(cb)cb.style.display='inline-flex';
   const emp=employees.find(e=>e.id===empId);
   document.getElementById('msgTitle').textContent=`Messages — ${emp?.name||''}`;
   const msgs=messages.filter(m=>m.employee_id===empId).sort((a,b)=>a.created_at.localeCompare(b.created_at));
@@ -2421,17 +3095,6 @@ async function removeCat(idx){const cats=[...(cfg.categories||[])];cats.splice(i
 const DOC_ICONS={share_code:'🔑',id:'🪪',driving:'🚗',rtw:'📋',contract:'📄',certificate:'🏆',insurance:'🛡️',other:'📁'};
 const DOC_LABELS={share_code:'Share Code',id:'ID / Passport',driving:'Driving Licence',rtw:'Right to Work',contract:'Contract',certificate:'Certificate',insurance:'Insurance',other:'Document'};
 
-async function loadEmpDocs(empId){
-  if(!empId)empId=document.getElementById('empId')?.value||'';
-  const listEl=document.getElementById('empDocsList');
-  if(!empId){if(listEl)listEl.innerHTML='<div style="text-align:center;color:var(--txtm);padding:18px;font-size:13px;">Save employee first to add documents.</div>';return;}
-  const r=await sb.from('employee_documents').select('*').eq('employee_id',empId).order('uploaded_at',{ascending:false});
-  if(r.error){console.warn('Docs load:',r.error);return;}
-  // Update global state
-  const otherDocs=employeeDocuments.filter(d=>d.employee_id!==empId);
-  employeeDocuments=[...otherDocs,...(r.data||[])];
-  renderDocList();
-}
 
 function copyDocSQL(){
   const sql=`CREATE TABLE IF NOT EXISTS employee_docs (
@@ -2514,24 +3177,8 @@ async function saveDoc(){
   toast(`${name} saved!`,'s');
 }
 
-async function deleteDoc(id){
-  if(!confirm('Delete this document?'))return;
-  const r=await sb.from('employee_documents').delete().eq('id',id);
-  if(r.error){toast(r.error.message,'e');return;}
-  employeeDocuments=employeeDocuments.filter(d=>d.id!==id);renderDocList();renderDocReminders();toast('Document deleted','i');
-}
-
 // ── DOCUMENT REMINDERS on dashboard ──────────────
-function renderDocReminders(){
-  // Returns sorted array of expiring docs using employeeDocuments state
-  const now=new Date();
-  return employeeDocuments.filter(d=>{
-    if(!d.expiry_date)return false;
-    const exp=new Date(d.expiry_date+'T00:00:00');
-    const diff=Math.round((exp-now)/(1000*60*60*24));
-    return diff<=(d.reminder_days||30);
-  }).sort((a,b)=>new Date(a.expiry_date)-new Date(b.expiry_date));
-}
+
 function openDocForEmp(empId){
   const emp=employees.find(e=>e.id===empId);
   if(!emp)return;
@@ -2657,7 +3304,6 @@ async function loadSalaryHistory(empId){
 // ═══════════════════════════════════════════════════
 // PAYMENT STATUS
 // ═══════════════════════════════════════════════════
-let paymentStatuses={}; // {empId_month_year: {bank_paid, cash_paid, paid_at}}
 
 function renderPayStatus(empId,m,y,total,bankAmt,cashAmt,C){
   const key=`${empId}_${m}_${y}`;
@@ -2821,6 +3467,270 @@ async function updateDocExpiry(){
 }
 
 // ═══════════════════════════════════════════════════
+// ATTENDANCE REQUESTS (office side)
+// ═══════════════════════════════════════════════════
+let attReqTab='pending';
+function setAttReqTab(f,el){attReqTab=f;document.querySelectorAll('#page-att-requests .tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');renderAttRequests();}
+
+async function clearAllAttReqs(){
+  const approved=attRequests.filter(r=>r.status==='approved'||r.status==='rejected');
+  if(!approved.length){toast('No old requests to clear','i');return;}
+  if(!confirm(`Clear ${approved.length} approved/rejected requests? Pending requests are kept.`))return;
+  const ids=approved.map(r=>r.id);
+  await sb.from('attendance_requests').delete().in('id',ids);
+  attRequests=attRequests.filter(r=>!ids.includes(r.id));
+  updateBadges();renderAttRequests();toast(`${approved.length} old requests cleared`,'s');
+}
+function renderAttRequests(){
+  let data=attReqTab==='all'?attRequests:attRequests.filter(r=>r.status===attReqTab);
+  data=[...data].sort((a,b)=>b.created_at?.localeCompare(a.created_at)||0);
+  const C=cur();
+  if(!data.length){document.getElementById('attReqBody').innerHTML='<div class="es"><i class="fa-solid fa-inbox"></i><h3>No requests</h3></div>';return;}
+  document.getElementById('attReqBody').innerHTML=data.map(req=>{
+    const emp=employees.find(e=>e.id===req.employee_id);
+    const dt=new Date(req.date+'T00:00:00');
+    const existing=attendance.find(a=>a.employee_id===req.employee_id&&a.date===req.date);
+    const stdStart='09:00',stdEnd='17:00';
+    const lateBy=req.sign_in&&req.sign_in>stdStart?`Started late (${req.sign_in} vs ${stdStart})`:'';
+    const earlyBy=req.sign_out&&req.sign_out<stdEnd?`Left early (${req.sign_out} vs ${stdEnd})`:'';
+    const isPending=req.status==='pending';
+    return`<div style="background:var(--card);border:1px solid var(--bdr);border-radius:var(--r);padding:15px;margin-bottom:11px;box-shadow:var(--sh);">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;flex-wrap:wrap;gap:7px;">
+        <div>
+          <div style="font-size:14px;font-weight:700;">${emp?.name||'?'}</div>
+          <div style="font-size:13px;font-weight:600;color:var(--txt2);">${dt.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'})}</div>
+        </div>
+        <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:${isPending?'var(--ambl)':req.status==='approved'?'var(--grnl)':'var(--redl)'};color:${isPending?'var(--amb)':req.status==='approved'?'var(--grn)':'var(--red)'};">${req.status.charAt(0).toUpperCase()+req.status.slice(1)}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;background:var(--card2);border-radius:var(--rs);padding:10px;margin-bottom:10px;">
+        <div style="text-align:center;"><div style="font-size:10px;color:var(--txtm);">Start</div><div style="font-size:15px;font-weight:700;">${req.sign_in||'—'}</div></div>
+        <div style="text-align:center;"><div style="font-size:10px;color:var(--txtm);">Finish</div><div style="font-size:15px;font-weight:700;">${req.sign_out||'—'}</div></div>
+        <div style="text-align:center;"><div style="font-size:10px;color:var(--txtm);">Hours</div><div style="font-size:15px;font-weight:700;">${req.hours||'—'}</div></div>
+      </div>
+      ${lateBy||earlyBy?`<div style="background:var(--ambl);border-radius:var(--rs);padding:7px 11px;margin-bottom:9px;font-size:12px;color:var(--amb);">⚠ ${[lateBy,earlyBy].filter(Boolean).join(' · ')}</div>`:''}
+      ${req.employee_note?`<div style="font-size:12px;color:var(--txt2);margin-bottom:9px;">Employee note: <strong>"${req.employee_note}"</strong></div>`:''}
+      ${existing?`<div style="font-size:12px;color:var(--txtm);margin-bottom:9px;">Current record: ${existing.sign_in||'?'} – ${existing.sign_out||'?'} · ${existing.hours||'?'}h · ${existing.status}</div>`:'<div style="font-size:12px;color:var(--txtm);margin-bottom:9px;">No existing record for this day</div>'}
+      ${isPending?`<div style="display:flex;gap:7px;flex-wrap:wrap;">
+        <button class="btn btn-s btn-sm" onclick="reviewAttReq('${req.id}','approved')"><i class="fa-solid fa-check"></i>Approve & Save</button>
+        <button class="btn btn-d btn-sm" onclick="promptRejectAtt('${req.id}')"><i class="fa-solid fa-xmark"></i>Reject</button>
+        <button class="btn btn-o btn-sm" onclick="editAttReq('${req.id}')"><i class="fa-solid fa-pen"></i>Edit & Approve</button>
+      </div>`:
+      `<div style="display:flex;align-items:center;gap:9px;"><span style="font-size:12px;color:var(--txtm);">${req.reviewed_at?'Reviewed '+new Date(req.reviewed_at).toLocaleDateString('en-GB'):''}</span><button class="btn btn-o btn-sm" onclick="reviewAttReq('${req.id}','pending')"><i class="fa-solid fa-rotate-left"></i>Undo</button></div>`}
+    </div>`;
+  }).join('');
+}
+
+async function reviewAttReq(id,status,officeNote){
+  const req=attRequests.find(r=>r.id===id);if(!req)return;
+  const r=await sb.from('attendance_requests').update({status,office_note:officeNote||null,reviewed_at:status!=='pending'?new Date().toISOString():null}).eq('id',id);
+  if(r.error){toast(r.error.message,'e');return;}
+  const idx=attRequests.findIndex(r=>r.id===id);
+  if(idx>=0){attRequests[idx].status=status;attRequests[idx].office_note=officeNote||null;attRequests[idx].reviewed_at=new Date().toISOString();}
+  // If approved: upsert into attendance table
+  if(status==='approved'&&req){
+    const emp=employees.find(e=>e.id===req.employee_id);
+    // Calculate if late/early to determine status
+    const startMins=req.sign_in?parseInt(req.sign_in.split(':')[0])*60+parseInt(req.sign_in.split(':')[1]):540;
+    const attStatus=startMins>9*60+15?'LA':'P';
+    const attRec={employee_id:req.employee_id,date:req.date,status:attStatus,sign_in:req.sign_in,sign_out:req.sign_out,hours:req.hours,overtime:Math.max(0,req.hours-8),notes:req.employee_note};
+    const ua=await sb.from('attendance').upsert(attRec,{onConflict:'employee_id,date'}).select().single();
+    if(!ua.error){const ai=attendance.findIndex(a=>a.employee_id===req.employee_id&&a.date===req.date);if(ai>=0)attendance[ai]=ua.data;else attendance.push(ua.data);}
+    toast('Approved and attendance saved!','s');
+  } else if(status==='rejected'){toast('Request rejected','i');}
+  else{toast('Reset to pending','i');}
+  updateBadges();renderAttRequests();
+}
+
+function promptRejectAtt(id){
+  const note=prompt('Reason for rejection (will be shown to employee):');
+  if(note===null)return;
+  reviewAttReq(id,'rejected',note);
+}
+
+function editAttReq(id){
+  const req=attRequests.find(r=>r.id===id);if(!req)return;
+  const emp=employees.find(e=>e.id===req.employee_id);
+  const newIn=prompt(`Edit start time for ${emp?.name||'?'} on ${req.date}:`,req.sign_in);
+  if(!newIn)return;
+  const newOut=prompt('Edit end time:',req.sign_out);
+  if(!newOut)return;
+  const sm=parseInt(newIn.split(':')[0])*60+parseInt(newIn.split(':')[1]||0);
+  const em=parseInt(newOut.split(':')[0])*60+parseInt(newOut.split(':')[1]||0);
+  const hrs=parseFloat(((em-sm)/60).toFixed(1));
+  sb.from('attendance_requests').update({sign_in:newIn,sign_out:newOut,hours:hrs}).eq('id',id).then(()=>{
+    const idx=attRequests.findIndex(r=>r.id===id);
+    if(idx>=0){attRequests[idx].sign_in=newIn;attRequests[idx].sign_out=newOut;attRequests[idx].hours=hrs;}
+    reviewAttReq(id,'approved',`Adjusted to ${newIn}–${newOut}`);
+  });
+}
+
+
+// ═══════════════════════════════════════════════════
+// DATA EXPORT / IMPORT
+// ═══════════════════════════════════════════════════
+
+async function exportAllData(format='json'){
+  const statusEl=document.getElementById('exportStatus');
+  statusEl.innerHTML='<i class="fa-solid fa-rotate fa-spin"></i> Fetching all data...';
+  try {
+    // Fetch all tables
+    const [empR,attR,expR,batR,msgR,payR,salR,docR,attReqR,settR]=await Promise.all([
+      sb.from('employees').select('*').order('name'),
+      sb.from('attendance').select('*').order('date'),
+      sb.from('expenses').select('*').order('date'),
+      sb.from('expense_batches').select('*').order('submitted_at'),
+      sb.from('messages').select('*').order('created_at'),
+      sb.from('payment_status').select('*'),
+      sb.from('salary_history').select('*').order('effective_from'),
+      sb.from('employee_documents').select('*').order('uploaded_at'),
+      sb.from('attendance_requests').select('*').order('created_at'),
+      sb.from('settings').select('*')
+    ]);
+
+    const errors=[empR,attR,expR,batR,msgR,payR,salR,docR,attReqR,settR]
+      .filter(r=>r.error).map(r=>r.error.message);
+    if(errors.length){statusEl.innerHTML=`<span style="color:var(--red);">Error: ${errors[0]}</span>`;return;}
+
+    if(format==='json'){
+      const backup={
+        _meta:{
+          exported_at:new Date().toISOString(),
+          version:'DAM Pro v2',
+          tables:{
+            employees:empR.data.length,
+            attendance:attR.data.length,
+            expenses:expR.data.length,
+            expense_batches:batR.data.length,
+            messages:msgR.data.length,
+            payment_status:payR.data.length,
+            salary_history:salR.data.length,
+            employee_documents:docR.data.length,
+            attendance_requests:attReqR.data.length
+          }
+        },
+        employees:empR.data,
+        attendance:attR.data,
+        expenses:expR.data,
+        expense_batches:batR.data,
+        messages:msgR.data,
+        payment_status:payR.data,
+        salary_history:salR.data,
+        employee_documents:docR.data,
+        attendance_requests:attReqR.data,
+        settings:settR.data
+      };
+      const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      const d=new Date().toISOString().slice(0,10);
+      a.href=url;a.download=`DAMPro_backup_${d}.json`;a.click();
+      URL.revokeObjectURL(url);
+      const total=Object.values(backup._meta.tables).reduce((s,n)=>s+n,0);
+      statusEl.innerHTML=`<span style="color:var(--grn);"><i class="fa-solid fa-circle-check"></i> Exported ${total.toLocaleString()} records across ${Object.keys(backup._meta.tables).length} tables</span>`;
+
+    } else if(format==='csv'){
+      // CSV export for expenses
+      const rows=expR.data;
+      const empMap={};empR.data.forEach(e=>empMap[e.id]=e.name);
+      const headers=['Date','Employee','Merchant','Category','Amount','Status','Tags','Notes','Receipt URL'];
+      const lines=[headers.join(','),...rows.map(r=>[
+        r.date,
+        `"${(empMap[r.employee_id]||'').replace(/"/g,'""')}"`,
+        `"${(r.merchant||'').replace(/"/g,'""')}"`,
+        `"${(r.category||'').replace(/"/g,'""')}"`,
+        r.amount,
+        r.status,
+        `"${(r.tags||[]).join(';')}"`,
+        `"${(r.notes||'').replace(/"/g,'""')}"`,
+        r.receipt_url||''
+      ].join(','))];
+      const csvStr=lines.join('\n');const blob=new Blob([csvStr],{type:'text/csv'});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      const d=new Date().toISOString().slice(0,10);
+      a.href=url;a.download=`DAMPro_expenses_${d}.csv`;a.click();
+      URL.revokeObjectURL(url);
+      statusEl.innerHTML=`<span style="color:var(--grn);"><i class="fa-solid fa-circle-check"></i> Exported ${rows.length} expense rows as CSV</span>`;
+    }
+  } catch(err){
+    statusEl.innerHTML=`<span style="color:var(--red);">Export failed: ${err.message}</span>`;
+  }
+}
+
+let _importData=null;
+
+function importFileChosen(input){
+  const file=input.files[0];if(!file)return;
+  document.getElementById('importFileName').textContent=file.name+' ('+Math.round(file.size/1024)+'KB)';
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      _importData=JSON.parse(e.target.result);
+      const meta=_importData._meta;
+      const total=meta?Object.values(meta.tables).reduce((s,n)=>s+n,0):0;
+      document.getElementById('importStatus').innerHTML=
+        meta?`<span style="color:var(--grn);">✓ Valid backup from ${meta.exported_at?.slice(0,10)} · ${total.toLocaleString()} records</span>`
+            :`<span style="color:var(--amb);">⚠ No metadata — may not be a DAM Pro backup</span>`;
+      const btn=document.getElementById('importBtn');
+      btn.disabled=false;btn.style.opacity='1';
+    }catch(err){
+      document.getElementById('importStatus').innerHTML=`<span style="color:var(--red);">Invalid JSON file: ${err.message}</span>`;
+      _importData=null;
+    }
+  };
+  reader.readAsText(file);
+}
+
+async function importAllData(){
+  if(!_importData){toast('No file loaded','e');return;}
+  if(!confirm('This will INSERT all records into the current Supabase project.\n\nOnly do this on a FRESH empty project. Continue?'))return;
+
+  const statusEl=document.getElementById('importStatus');
+  const btn=document.getElementById('importBtn');
+  btn.disabled=true;
+
+  const tables=[
+    {key:'employees',   table:'employees'},
+    {key:'attendance',  table:'attendance'},
+    {key:'expenses',    table:'expenses'},
+    {key:'expense_batches', table:'expense_batches'},
+    {key:'messages',    table:'messages'},
+    {key:'payment_status', table:'payment_status'},
+    {key:'salary_history', table:'salary_history'},
+    {key:'employee_documents', table:'employee_documents'},
+    {key:'attendance_requests', table:'attendance_requests'},
+  ];
+
+  let imported=0,errors=[];
+  for(const {key,table} of tables){
+    const rows=_importData[key];
+    if(!rows||!rows.length)continue;
+    statusEl.innerHTML=`<i class="fa-solid fa-rotate fa-spin"></i> Importing ${table} (${rows.length} rows)...`;
+    // Insert in batches of 500 to avoid payload limits
+    const CHUNK=500;
+    for(let i=0;i<rows.length;i+=CHUNK){
+      const chunk=rows.slice(i,i+CHUNK);
+      const r=await sb.from(table).upsert(chunk,{onConflict:'id',ignoreDuplicates:true});
+      if(r.error){errors.push(`${table}: ${r.error.message}`);break;}
+      imported+=chunk.length;
+    }
+  }
+
+  // Import settings separately (upsert by id=1)
+  if(_importData.settings?.length){
+    await sb.from('settings').upsert(_importData.settings[0],{onConflict:'id'});
+  }
+
+  if(errors.length){
+    statusEl.innerHTML=`<span style="color:var(--amb);">Completed with errors:<br>${errors.map(e=>`• ${e}`).join('<br>')}</span>`;
+  } else {
+    statusEl.innerHTML=`<span style="color:var(--grn);font-weight:700;"><i class="fa-solid fa-circle-check"></i> Import complete — ${imported.toLocaleString()} records imported successfully. Refresh the page to load data.</span>`;
+    toast('Import complete! Refresh to load data.','s');
+  }
+  btn.disabled=false;btn.style.opacity='1';
+}
+
+// ═══════════════════════════════════════════════════
 // KEYBOARD SHORTCUTS
 // ═══════════════════════════════════════════════════
 document.addEventListener('keydown',e=>{
@@ -2829,6 +3739,30 @@ document.addEventListener('keydown',e=>{
 });
 document.getElementById('empModal').addEventListener('click',function(e){if(e.target===this)closeEmpModal();});
 document.getElementById('adminPin').addEventListener('keydown',e=>{if(e.key==='Enter')doAdminLogin();});
+
+// ── NETWORK & ERROR HANDLING ──
+window.addEventListener('online', ()=>{
+  toast('Back online — syncing...','s');
+  if(typeof loadAllData==='function')loadAllData();
+  if(typeof silentSync==='function')silentSync();
+});
+window.addEventListener('offline', ()=>{
+  toast('No internet connection','e');
+  const sd=document.getElementById('syncStrip')||document.getElementById('syncBadge');
+  if(sd&&typeof setSyncUI==='function')setSyncUI('offline');
+  else if(sd&&typeof setSyncStatus==='function')setSyncStatus('err','Offline');
+});
+window.onerror=function(msg,url,line,col,err){
+  console.error('DAM Error:',msg,'at',url,line);
+  if(msg&&!msg.includes('Script error'))
+    toast('Something went wrong — try refreshing','e');
+  return false;
+};
+window.addEventListener('unhandledrejection',e=>{
+  console.error('Unhandled promise:',e.reason);
+  if(e.reason?.message&&!e.reason.message.includes('aborted'))
+    toast('Connection error — check internet','e');
+});
 </script>
 </body>
 </html>
